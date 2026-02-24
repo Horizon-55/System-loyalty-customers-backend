@@ -1,0 +1,7 @@
+#untracked files
+.env
+node_modules
+dist
+.DS_Store
+.idea
+.vscode
