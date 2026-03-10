@@ -1,0 +1,36 @@
+{
+  "name": "point-service",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [
+    "Education"
+  ],
+  "license": "ISC",
+  "author": "Horizon",
+  "type": "module",
+  "main": "src/app.ts",
+  "scripts": {
+    "start": "tsx src/app.ts"
+  },
+  "dependencies": {
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
+    "axios": "^1.13.6",
+    "axios-retry": "^4.5.0",
+    "express": "^5.2.1",
+    "mongodb-memory-server": "^11.0.1",
+    "mongoose": "^9.2.4",
+    "opossum": "^9.0.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "tsx": "^4.21.0",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.3.5",
+    "@types/opossum": "^8.1.9",
+    "@types/uuid": "^10.0.0",
+    "typescript": "^5.9.3"
+  }
+}
