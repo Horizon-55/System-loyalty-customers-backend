@@ -5,3 +5,5 @@ dist
 .DS_Store
 .idea
 .vscode
+point-service/package-lock.json
+customer-service/src/package-lock.json

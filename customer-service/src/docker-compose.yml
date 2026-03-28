@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: customer-service-loyalty-rabbitmq
+    ports:
+      - "5672:5672"   # Порт для спілкування наших мікросервісів з брокером
+      - "15672:15672" # Порт для візуального веб-інтерфейсу (Management UI)
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    restart: always
+
+volumes:
+  rabbitmq_data:

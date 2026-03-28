@@ -10,6 +10,7 @@ import { errorHandler } from './common/middlewares/errorHandler.middleware.js';
 import { AppError } from './common/middlewares/errors/AppError.js';
 import { createHealthRoutes } from './modules/health/Api/HealthRoutes.js';
 import { tracingMiddleware } from './common/middlewares/tracing.middleware.js';
+import { RabbitMQConsumer } from './modules/customers/infrastructure/rabbitmq/RabbitMQConsumer.js';
 
 const app = express();
 // Мідлвар для парсингу JSON у тілі запиту
@@ -33,6 +34,9 @@ const bootstrap = async () => {
     //6. Створюємо роутер для нашого модуля
     const customerRouter = createCustomerRoutes(customerController);
     const healthRouter = createHealthRoutes();
+    //7. Підключення до RabbitMQ та запуск Consumer
+    const rabbitConsumer = new RabbitMQConsumer();
+    await rabbitConsumer.connectAndConsume();
     // Реєструємо всі маршрути модуля Customers під базовим шляхом v1
     app.use('/api/v1/customers', customerRouter);
     // Реєструємо всі маршрути модуля Health під базовим шляхом v1
@@ -45,13 +49,13 @@ const bootstrap = async () => {
     app.all('/{*path}', (req: express.Request, res: express.Response, next: express.NextFunction) => {
       next(new AppError(`Маршрут ${req.originalUrl} не знайдений`, 404));
     });
-    //7. Обробка помилок
+    //8. Обробка помилок
     app.use(errorHandler);
-    //8. Запуск сервера
+    //9. Запуск сервера
     app.listen(config.port, () => {
-      console.log(`🚀 Модульний моноліт запущено на http://localhost:${config.port}`);
-      console.log(`✅ Модуль Customers доступний за адресою http://localhost:${config.port}/api/customers`);
-      console.log(`🔍 Swagger документація доступна за адресою http://localhost:${config.port}/api-docs`);
+      console.log(`Модульний моноліт запущено на http://localhost:${config.port}`);
+      console.log(`Модуль Customers доступний за адресою http://localhost:${config.port}/api/customers`);
+      console.log(`Swagger документація доступна за адресою http://localhost:${config.port}/api-docs`);
     });
   } catch (error) {
     console.error('Помилка підключення до бази даних:', error);
