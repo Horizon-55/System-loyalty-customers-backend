@@ -132,5 +132,52 @@ export const createPointRoutes = (controller: PointController) => {
      *                   example: "/api/v1/points/add"
      */
     router.post('/add', controller.addPoints);
+
+    /**
+     * @openapi
+     * /api/v1/points/buy-premium:
+     *   post:
+     *     summary: Купівля Premium-статусу (Початок Саги)
+     *     tags: [Points (Saga)]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - customerId
+     *             properties:
+     *               customerId:
+     *                 type: string
+     *                 example: "123"
+     *     responses:
+     *       200:
+     *         description: Бали списано, запит в обробці (Pending)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: "Запит на купівлю Premium прийнято. Обробка..."
+     *                 customerId:
+     *                   type: string
+     *                   example: "123"
+     *                 pointsDeducted:
+     *                   type: number
+     *                   example: 500
+     *                 status:
+     *                   type: string
+     *                   example: "PENDING"
+     *       400:
+     *         description: Некоректний запит (відсутній customerId)
+     *       404:
+     *         description: Клієнта не знайдено
+     *       500:
+     *         description: Внутрішня помилка сервера
+     */
+    router.post('/buy-premium', controller.buyPremium); 
     return router;
 }

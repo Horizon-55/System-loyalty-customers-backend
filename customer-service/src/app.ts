@@ -11,6 +11,7 @@ import { AppError } from './common/middlewares/errors/AppError.js';
 import { createHealthRoutes } from './modules/health/Api/HealthRoutes.js';
 import { tracingMiddleware } from './common/middlewares/tracing.middleware.js';
 import { RabbitMQConsumer } from './modules/customers/infrastructure/rabbitmq/RabbitMQConsumer.js';
+import { RabbitMQPublisher } from './modules/customers/infrastructure/rabbitmq/RabbitMQPublisher.js';
 
 const app = express();
 // Мідлвар для парсингу JSON у тілі запиту
@@ -35,23 +36,28 @@ const bootstrap = async () => {
     const customerRouter = createCustomerRoutes(customerController);
     const healthRouter = createHealthRoutes();
     //7. Підключення до RabbitMQ та запуск Consumer
-    const rabbitConsumer = new RabbitMQConsumer();
+    const rabbitPublisher = new RabbitMQPublisher();
+    await rabbitPublisher.connect();
+    //8.Передаємо CustomerService та RabbitMQPublisher всередину Consumer
+    const rabbitConsumer = new RabbitMQConsumer(customerService, rabbitPublisher);
+    //9. Запуск Consumer
     await rabbitConsumer.connectAndConsume();
+    //10. Реєструємо всі маршрути модуля Customers під базовим шляхом v1
     // Реєструємо всі маршрути модуля Customers під базовим шляхом v1
     app.use('/api/v1/customers', customerRouter);
-    // Реєструємо всі маршрути модуля Health під базовим шляхом v1
+    //11.Реєструємо всі маршрути модуля Health під базовим шляхом v1
     app.use('/health', healthRouter);
-    //Перенаправлення на Swagger документацію
+    //12.Перенаправлення на Swagger документацію
     app.get('/', (req, res) => {
       res.redirect('/api-docs');
     });
-    //Обробка неіснуючи маршутів 
+    //13.Обробка неіснуючи маршутів 
     app.all('/{*path}', (req: express.Request, res: express.Response, next: express.NextFunction) => {
       next(new AppError(`Маршрут ${req.originalUrl} не знайдений`, 404));
     });
-    //8. Обробка помилок
+    //14. Обробка помилок
     app.use(errorHandler);
-    //9. Запуск сервера
+    //15. Запуск сервера
     app.listen(config.port, () => {
       console.log(`Модульний моноліт запущено на http://localhost:${config.port}`);
       console.log(`Модуль Customers доступний за адресою http://localhost:${config.port}/api/customers`);

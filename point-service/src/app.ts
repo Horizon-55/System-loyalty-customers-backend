@@ -9,6 +9,7 @@ import { connectToMockDatabase } from './infrastructure/database/MongoMemorySetu
 import { setupSwagger } from './config/swagger.js';
 import { RabbitMQPublisher } from './infrastructure/rabbitmq/RabbitMQPublisher.js';
 import { OutboxRelay } from './application/OutboxRelay.js';
+import { RabbitMQConsumer } from './infrastructure/rabbitmq/RabbitMQConsumer.js';
 
 const app = express();
 // Мідлвар для парсингу JSON у тілі запиту
@@ -30,18 +31,22 @@ const bootstrap = async () => {
       const outboxRelay = new OutboxRelay(rabbitMQPublisher);
       outboxRelay.start();
 
-      // 4. COMPOSITION ROOT (Збірка залежностей)
-      const customerClient = new CustomerServiceClient(); // Наш клієнт з Axios, Retry та Circuit Breaker
+      // 4. COMPOSITION ROOT (залежності для домену та RabbitMQ consumer)
+      const customerClient = new CustomerServiceClient(); // Axios, Retry та Circuit Breaker
       const pointService = new PointService(customerClient);
+
+      const rabbitConsumer = new RabbitMQConsumer(pointService);
+      await rabbitConsumer.connectAndConsume();
+
       const pointController = new PointController(pointService);
       const pointRouter = createPointRoutes(pointController);
-  
+
       // 5. Підключення маршрутів
       app.use('/api/v1/points', pointRouter);
   
       // 6. ГЛОБАЛЬНИЙ ОБРОБНИК ПОМИЛОК (обов'язково в кінці)
       app.use(errorHandler);
-  
+
       // 7. Запуск сервера
       const PORT = process.env.PORT || 3002;
       app.listen(PORT, () => {console.log(`[Point Service] успішно запущено на http://localhost:${PORT}`);});

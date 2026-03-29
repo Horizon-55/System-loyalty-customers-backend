@@ -30,7 +30,8 @@ export class Customers {
     }
     //бізнес логіка Визначення рівня лояльності
     public evaluateTier(): void {
-        if (this.totalPoints >= 1000) {this.tier = LoyaltyTier.VIP;}
+        if (this.totalPoints >= 1000) { this.tier = LoyaltyTier.VIP; }
+        else if (this.totalPoints >= 700) { this.tier = LoyaltyTier.PREMIUM; }
         else if (this.totalPoints >= 500) {this.tier = LoyaltyTier.GOLD;}
         else {this.tier = LoyaltyTier.STANDART;}
     }

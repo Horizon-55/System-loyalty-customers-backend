@@ -8,7 +8,6 @@ export class PointService {
   public async addPoints(customerId: string, amount: number): Promise<void> {
     // 1. Синхронний виклик (перевіряємо, чи існує клієнт)
     const exists = await this.customerClient.checkCustomerExists(customerId);
-    
     if (!exists) 
       throw new Error(`Неможливо нарахувати бали: Клієнта з ID ${customerId} не знайдено.`);
     
@@ -17,11 +16,11 @@ export class PointService {
     session.startTransaction();
 
     try {
-      // 3. БІЗНЕС-ОПЕРАЦІЯ: Імітуємо збереження балів (якби у нас була колекція PointModel)
+      // 3. business logic: Імітуємо збереження балів (якби у нас була колекція PointModel)
       console.log(`[PointService] Бізнес-логіка: Нарахування ${amount} балів клієнту ${customerId}...`);
       // await PointModel.create([{ customerId, amount }], { session });
 
-      // 4. OUTBOX ПАТЕРН: Зберігаємо подію в окрему таблицю в межах тієї ж транзакції
+      // 4. outbox pattern: Зберігаємо подію в окрему таблицю в межах тієї ж транзакції
       await OutboxEventModel.create([{
         eventType: 'POINTS_ADDED',
         aggregateId: customerId,
@@ -45,5 +44,64 @@ export class PointService {
       // Обов'язково закриваємо сесію, щоб не було витоку пам'яті в межах транзакції
       session.endSession();
     }
+  }
+
+   //новий метод для саги: Списання балів для купівлі Premium
+  public async deductPointsForPremium(customerId: string, amount: number): Promise<void> {
+    // 1. Перевіряємо, чи існує клієнт
+    const exists = await this.customerClient.checkCustomerExists(customerId);
+    if (!exists) 
+      throw new Error(`Клієнта з ID ${customerId} не знайдено.`);
+    
+    // 2. Відкриваємо транзакцію бази даних
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+      // 3. business logic: Імітуємо списання балів (перевірка балансу і віднімання)
+      console.log(`[PointService] saga: Списання ${amount} балів у клієнта ${customerId} для покупки Premium...`);
+      // У реальному житті тут була б перевірка: if (currentPoints < amount) throw Error('Недостатньо балів');
+
+      // 4. outbox pattern: Зберігаємо подію points deducted
+      // Ця подія стане тригером для Customer Service, щоб він видав Premium-статус
+      await OutboxEventModel.create([{
+        eventType: 'POINTS_DEDUCTED',
+        aggregateId: customerId,
+        payload: { 
+          customerId: customerId, 
+          amountDeducted: amount,
+          action: 'BUY_PREMIUM',
+          timestamp: new Date().toISOString() 
+        }
+      }], { session });
+
+      // 5. Якщо все пройшло без помилок - зберігаємо зміни (Commit)
+      await session.commitTransaction();
+      console.log(`[PointService] saga: Бали успішно списано. Подію points deducted збережено в Outbox!`);
+
+    } catch (error) {
+      await session.abortTransaction();
+      console.error(`[PointService] Помилка під час списання балів:`, error);
+      throw error;
+    } finally {session.endSession();}
+  }
+
+  //saga: компенсація (rollback)
+  public async refundPoints(customerId: string, amount: number): Promise<void> {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+      console.log(`\n[PointService] saga: компенсація (rollback): Повернення ${amount} балів клієнту ${customerId}...`);
+      
+      // business logic: Імітуємо додавання балів назад на баланс
+      // У реальному житті тут: await PointModel.updateOne(..., { $inc: { amount: amount } })
+      await session.commitTransaction();
+      console.log(`[PointService] saga: Відкат успішний! Бали повернуто, цілісність даних збережено.`);
+
+    } catch (error) {
+      await session.abortTransaction();
+      console.error(`[PointService] Помилка під час компенсації:`, error);
+    } finally {session.endSession();}
   }
 }

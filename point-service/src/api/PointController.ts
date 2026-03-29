@@ -18,4 +18,23 @@ export class PointController {
             next(new AppError(error.message, error.statusCode));
         }
     }
+
+    public buyPremium = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { customerId } = req.body;
+      const premiumCost = 500; // Фіксована вартість Premium-статусу
+
+      if (!customerId) 
+        throw new AppError('customerId є обов\'язковим', 400);
+      
+      await this.pointService.deductPointsForPremium(customerId, premiumCost);
+      
+      res.status(200).json({ 
+        message: 'Запит на купівлю Premium прийнято. Обробка...',
+        customerId,
+        pointsDeducted: premiumCost,
+        status: 'PENDING' // Вказуємо, що це eventual consistency
+      });
+    } catch (error) {next(error); }
+  };
 }

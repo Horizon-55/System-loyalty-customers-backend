@@ -2,6 +2,7 @@ import {Customers} from "../domain/Customers.js";
 import { ICustomerRepository } from "./ports/ICustomerRepository.js";
 import { CreateCustomerDto, CustomerResponseDto } from "./dto/CreateCustomerDto.js";
 import { randomUUID } from "crypto";
+import { LoyaltyTier } from "../domain/LoyaltyTier.js";
 
 export class CustomerService {
     constructor(private readonly customerRepository: ICustomerRepository) {}
@@ -11,7 +12,6 @@ export class CustomerService {
         if (!customer) throw new Error("Клієнта не знайдено"); //якщо клієнта не знайдено, кидаємо помилку
         return this.mapToResponceDto(customer); //якщо клієнта знайдено, то повертаємо його
     }
-
 
     public async registerCustomer(dto: CreateCustomerDto): Promise<CustomerResponseDto> {
         //перевірка на існування такого користувача
@@ -40,4 +40,23 @@ export class CustomerService {
             totalPoints: customer.getTotalPoints(),
         }
     }
+
+    /**
+   * НОВИЙ МЕТОД ДЛЯ САГИ: Видача Premium-статусу
+   */
+  public async upgradeToPremium(id: string): Promise<void> {
+    const customer = await this.customerRepository.findById(id);
+    if (!customer) 
+      throw new Error('Клієнта не знайдено');
+
+    // Штучна умова для тестування компенсації (відкату)
+    if (customer.getTier() === LoyaltyTier.PREMIUM) 
+      throw new Error('Клієнт ВЖЕ має статус Premium. Операція відхилена.');
+    
+    // Якщо все добре — оновлюємо статус
+   (customer as any).tier = LoyaltyTier.PREMIUM;
+    
+    // Зберігаємо зміни в базу (через репозиторій)
+    await this.customerRepository.save(customer); 
+  }
 }
