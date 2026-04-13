@@ -4,6 +4,10 @@ import { createProxyMiddleware } from 'http-proxy-middleware';
 import axios from 'axios';
 import swaggerJsDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
+import rateLimit from 'express-rate-limit';
+import { authMiddleware } from './middleware/authMiddleware';
+import jwt from 'jsonwebtoken';
+import { metricsMiddleware, register } from './middleware/metrics';
 
 const app = express();
 const PORT = 3000;
@@ -24,6 +28,15 @@ const swaggerOptions = {
         description: 'Gateway Server'
       },
     ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+    },
   },
   apis: ['./src/app.ts'], // Вказуємо, що документацію шукати в цьому ж файлі
 };
@@ -31,6 +44,36 @@ const swaggerOptions = {
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
+app.use(metricsMiddleware);
+
+/**
+ * @openapi
+ * /metrics:
+ *   get:
+ *     summary: Отримати системні метрики (Prometheus)
+ *     tags:
+ *       - Monitoring
+ *     responses:
+ *       200:
+ *         description: Метрики системи
+ */
+app.get('/metrics', async (req: Request, res: Response) => {
+  res.setHeader('Content-Type', register.contentType);
+  res.send(await register.metrics());
+});
+//захист від перевантажень 
+const limiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // Часове вікно: 1 хвилина
+  max: 5, // Ліміт: максимум 5 запитів з одного IP за цю хвилину (ставимо мало спеціально для тесту)
+  message: {
+    success: false,
+    error: 'Перевищено ліміт запитів (Rate Limit). Будь ласка, зачекайте хвилину.'
+  },
+  standardHeaders: true, // Відправляти інфо про ліміти в заголовках (RateLimit-Limit, RateLimit-Remaining)
+  legacyHeaders: false, // Вимкнути старі заголовки X-RateLimit
+});
+
+app.use(limiter);
 // Усі запити на /api/customers перенаправляємо на Customer Service (порт 3001)
 app.use('/api/customers', createProxyMiddleware({ 
   target: 'http://localhost:3001', 
@@ -49,10 +92,12 @@ app.use('/api/points', createProxyMiddleware({
  * @openapi
  * /api/dashboard/{customerId}:
  *   get:
- *     summary: Отримати агрегований дашборд клієнта (API Composition)
+ *     summary: Отримати агрегований дашборд клієнта (API Composition) (Захищено JWT)
  *     description: Збирає дані про профіль клієнта з Customer Service та баланс балів з Point Service. Демонструє стійкість системи у разі падіння сервісу балів.
  *     tags:
- *       - Dashboard
+ *       - [Dashboard]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: customerId
@@ -68,7 +113,7 @@ app.use('/api/points', createProxyMiddleware({
  */
 
 // api composition (Дашборд)
-app.get('/api/dashboard/:customerId', async (req: Request, res: Response) => {
+app.get('/api/dashboard/:customerId', authMiddleware, async (req: Request, res: Response) => {
   const { customerId } = req.params;
   console.log(`[Gateway] Збираємо дашборд для клієнта: ${customerId}`);
   try {
@@ -108,10 +153,62 @@ app.get('/api/dashboard/:customerId', async (req: Request, res: Response) => {
     });
   }
 });
-
+/**
+ * @openapi
+ * /health:
+ *   get:
+ *     summary: Перевірка стану системи (Health Check)
+ *     description: Повертає статус API Gateway та системні метрики. Це перший крок до виконання завдання на 10 балів (Observability).
+ *     tags:
+ *       - Monitoring
+ *     responses:
+ *       200:
+ *         description: Система працює стабільно
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: "UP"
+ *                 uptime:
+ *                   type: number
+ *                   example: 120.5
+ *                 timestamp:
+ *                   type: string
+ *                   example: "2026-04-13T12:00:00Z"
+ */
 // Базовий роут для перевірки, що Gateway живий
 app.get('/health', (req: Request, res: Response) => {
-  res.status(200).json({ status: 'API Gateway is running' });
+  res.status(200).json({
+    status: 'UP',
+    uptime: process.uptime(), // час роботи процесу в секундах
+    timestamp: new Date().toISOString(),
+    message: 'API Gateway працює в штатному режимі'
+  });
+});
+/**
+ * @openapi
+ * /api/auth/mock-login:
+ *   post:
+ *     summary: Отримати тестовий JWT токен
+ *     tags:
+ *       - Auth
+ *     responses:
+ *       200:
+ *         description: Токен успішно згенеровано
+ */
+// допоміжний ендпоінт для тестування (генерація JWT)
+app.post('/api/auth/mock-login', (req: Request, res: Response) => {
+  // Імітуємо логін клієнта з ID 123
+  const mockUser = { userId: '123', role: 'user' };
+  const token = jwt.sign(mockUser, 'my_super_secret_jwt_key_for_lab7', { expiresIn: '1h' });
+  
+  res.json({ 
+    message: 'Успішний вхід', 
+    token: token 
+  });
 });
 
 app.listen(PORT, () => {
