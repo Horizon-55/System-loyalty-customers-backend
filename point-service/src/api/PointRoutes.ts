@@ -179,5 +179,25 @@ export const createPointRoutes = (controller: PointController) => {
      *         description: Внутрішня помилка сервера
      */
     router.post('/buy-premium', controller.buyPremium); 
+  /**
+   * @openapi
+   * /api/v1/points/{customerId}:
+   *   get:
+   *     summary: Отримати баланс балів клієнта
+   *     tags:
+   *       - Points
+   *     parameters:
+   *       - in: path
+   *         name: customerId
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: ID клієнта
+   *     responses:
+   *       200:
+   *         description: Успішне отримання балансу
+   */
+  // Важливо: цей роут має ловити ID як параметр URL
+  router.get('/:customerId', controller.getBalance);
     return router;
 }

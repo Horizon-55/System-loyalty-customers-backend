@@ -37,4 +37,19 @@ export class PointController {
       });
     } catch (error) {next(error); }
   };
+
+  public getBalance = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const customerId = req.params['customerId'] as string;
+
+      if (!customerId)
+        throw new AppError('customerId є обов\'язковим', 400);
+
+      const balance = await this.pointService.getBalance(customerId);
+
+      res.status(200).json(balance);
+    } catch (error) {
+      next(error);
+    }
+  };
 }

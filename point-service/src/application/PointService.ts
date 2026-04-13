@@ -104,4 +104,28 @@ export class PointService {
       console.error(`[PointService] Помилка під час компенсації:`, error);
     } finally {session.endSession();}
   }
+
+  //метод: Отримання балансу балів по ID клієнта
+  public async getBalance(customerId: string): Promise<any> {
+    // 1. Перевіряємо, чи існує клієнт (повертає true або false)
+    const exists = await this.customerClient.checkCustomerExists(customerId);
+    
+    // 2. Якщо клієнта немає, віддаємо пустий баланс
+    if (!exists) {
+      return { 
+        customerId: customerId, 
+        points: 0,
+        tier: 'Standard' 
+      };
+    }
+
+    // 3. Оскільки ми "імітували" БД балів, для Gateway віддаємо умовний баланс.
+    // Це дозволить нам ідеально перевірити роботу API Composition!
+    return {
+      customerId: customerId,
+      points: 1500, // Умовні бали, щоб побачити їх у Дашборді Gateway
+      tier: 'Premium',
+      lastTransactionDate: new Date().toISOString()
+    };
+  }
 }
