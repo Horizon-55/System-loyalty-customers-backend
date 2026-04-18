@@ -5,6 +5,7 @@ import axios from 'axios';
 import swaggerJsDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import rateLimit from 'express-rate-limit';
+import { ConsulManager } from './config/ConsulManager';
 import { authMiddleware } from './middleware/authMiddleware';
 import jwt from 'jsonwebtoken';
 import { metricsMiddleware, register } from './middleware/metrics';
@@ -210,9 +211,41 @@ app.post('/api/auth/mock-login', (req: Request, res: Response) => {
     token: token 
   });
 });
+/**
+ * @openapi
+ * /api/config-demo:
+ *   get:
+ *     summary: Демонстрація Runtime Refresh (Lab 8)
+ *     tags:
+ *       - Config
+ *     responses:
+ *       200:
+ *         description: Поточна конфігурація з Consul
+ */
+app.get('/api/config-demo', (req: Request, res: Response) => {
+  res.json({
+    status: 'success',
+    source: 'Consul Centralized Configuration',
+    currentSettings: ConsulManager.currentConfig
+  });
+});
+// 2. Створюємо асинхронну функцію для старту
+async function startServer() {
+  await ConsulManager.init('dev'); 
 
+    // Вмикаємо динамічне оновлення кожні 5 секунд
+    ConsulManager.startWatching('dev', 5000);
+
+    // Перевіряємо, чи підтягнулися налаштування
+    if (ConsulManager.currentConfig.welcomeMessage) 
+      console.log(`Повідомлення від Consul: ${ConsulManager.currentConfig.welcomeMessage}`);
+}
+
+// Запуск
 app.listen(PORT, () => {
   console.log(` API Gateway успішно запущено на порту ${PORT}`);
   console.log(` Проксі: /api/customers -> http://localhost:3001`);
   console.log(` Проксі: /api/points -> http://localhost:3002`);
 });
+
+startServer();
