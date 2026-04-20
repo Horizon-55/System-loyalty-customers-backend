@@ -201,14 +201,20 @@ app.get('/health', (req: Request, res: Response) => {
  *         description: Токен успішно згенеровано
  */
 // допоміжний ендпоінт для тестування (генерація JWT)
-app.post('/api/auth/mock-login', (req: Request, res: Response) => {
+app.post('/api/auth/mock-login', async (req: Request, res: Response) => {
   // Імітуємо логін клієнта з ID 123
   const mockUser = { userId: '123', role: 'user' };
-  const token = jwt.sign(mockUser, 'my_super_secret_jwt_key_for_lab7', { expiresIn: '1h' });
-  
-  res.json({ 
-    message: 'Успішний вхід', 
-    token: token 
+
+  // ВАЖЛИВО: беремо ТОЙ САМИЙ секрет, яким authMiddleware перевіряє токен,
+  // інакше jwt.verify поверне "invalid signature".
+  const secretData = await ConsulManager.getSecret('secrets/api-gateway/jwt');
+  const JWT_SECRET = secretData?.jwtSecret || 'fallback_secret';
+
+  const token = jwt.sign(mockUser, JWT_SECRET, { expiresIn: '1h' });
+
+  res.json({
+    message: 'Успішний вхід',
+    token: token
   });
 });
 /**
