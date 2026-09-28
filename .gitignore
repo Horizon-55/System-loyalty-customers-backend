@@ -8,3 +8,4 @@ dist
 point-service/package-lock.json
 customer-service/src/package-lock.json
 api-gateway/package-lock.json
+.scannerwork/
