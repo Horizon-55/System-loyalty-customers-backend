@@ -1,22 +1,23 @@
-import {Customers} from "../domain/Customers.js";
+import { Customers } from "../domain/Customers.js";
 import { ICustomerRepository } from "./ports/ICustomerRepository.js";
 import { CreateCustomerDto, CustomerResponseDto } from "./dto/CreateCustomerDto.js";
 import { randomUUID } from "crypto";
 import { LoyaltyTier } from "../domain/LoyaltyTier.js";
+import { AppError } from "../../../common/middlewares/errors/AppError.js";
 
 export class CustomerService {
     constructor(private readonly customerRepository: ICustomerRepository) {}
 
     public async getCustomerById(id: string): Promise<CustomerResponseDto> {
         const customer = await this.customerRepository.findById(id); //якщо клієнта знайдено, то повертаємо його
-        if (!customer) throw new Error("Клієнта не знайдено"); //якщо клієнта не знайдено, кидаємо помилку
+        if (!customer) throw new AppError("Клієнта не знайдено", 404); //якщо клієнта не знайдено, кидаємо 404
         return this.mapToResponceDto(customer); //якщо клієнта знайдено, то повертаємо його
     }
 
     public async registerCustomer(dto: CreateCustomerDto): Promise<CustomerResponseDto> {
         //перевірка на існування такого користувача
         const existingCustomer = await this.customerRepository.findByEmail(dto.email);
-        if (existingCustomer) throw new Error("Користувач з таким email вже існує");
+        if (existingCustomer) throw new AppError("Користувач з таким email вже існує", 409);
 
         //2. Створення доменної сутності
         const newCustomer = new Customers(

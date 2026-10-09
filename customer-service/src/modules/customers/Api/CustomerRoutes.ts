@@ -39,24 +39,24 @@ export const createCustomerRoutes = (controller: CustomerController) => {
 
 
     /**
-   * @openapi
-   * /api/v1/customers/{id}:
-   * get:
-   * summary: Отримання клієнта за ID (Міжсервісна взаємодія)
-   * tags: [Customers]
-   * parameters:
-   * - in: path
-   * name: id
-   * required: true
-   * schema:
-   * type: string
-   * description: Унікальний ідентифікатор клієнта
-   * responses:
-   * 200:
-   * description: Клієнта знайдено
-   * 404:
-   * description: Клієнта не знайдено
-   */
+     * @openapi
+     * /api/v1/customers/{id}:
+     *   get:
+     *     summary: Отримання клієнта за ID (Міжсервісна взаємодія)
+     *     tags: [Customers]
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: string
+     *         description: Унікальний ідентифікатор клієнта
+     *     responses:
+     *       200:
+     *         description: Клієнта знайдено
+     *       404:
+     *         description: Клієнта не знайдено
+     */
     router.get('/:id', controller.getbyId);
     return router;
 }

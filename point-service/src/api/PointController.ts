@@ -45,7 +45,12 @@ export class PointController {
       if (!customerId)
         throw new AppError('customerId є обов\'язковим', 400);
 
-      const balance = await this.pointService.getBalance(customerId);
+      const bypassResilience = req.headers['x-bypass-resilience'] === 'true';
+      const balance = await this.pointService.getBalance(customerId, bypassResilience);
+
+      if (balance.fallbackApplied) {
+        res.setHeader('X-Resilience-Fallback', 'true');
+      }
 
       res.status(200).json(balance);
     } catch (error) {

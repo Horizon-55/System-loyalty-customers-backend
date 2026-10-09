@@ -106,26 +106,45 @@ export class PointService {
   }
 
   //метод: Отримання балансу балів по ID клієнта
-  public async getBalance(customerId: string): Promise<any> {
-    // 1. Перевіряємо, чи існує клієнт (повертає true або false)
-    const exists = await this.customerClient.checkCustomerExists(customerId);
-    
-    // 2. Якщо клієнта немає, віддаємо пустий баланс
-    if (!exists) {
-      return { 
-        customerId: customerId, 
+  public async getBalance(customerId: string, bypassResilience = false): Promise<any> {
+    try {
+      // 1. Перевіряємо, чи існує клієнт (повертає true або false)
+      const exists = await (this.customerClient as any).checkCustomerExists(customerId, bypassResilience);
+      
+      // 2. Якщо клієнта немає, віддаємо пустий баланс
+      if (!exists) {
+        return { 
+          customerId: customerId, 
+          points: 0, 
+          tier: 'Standard' 
+        };
+      }
+
+      // 3. Віддаємо повні дані при нормальній роботі
+      return {
+        customerId: customerId,
+        points: 1500,
+        tier: 'Premium',
+        status: 'ACTIVE',
+        lastTransactionDate: new Date().toISOString()
+      };
+    } catch (error: any) {
+      // Якщо це стан «ДО» (без захисту): прокидаємо помилку для демонстрації каскадного падіння 500
+      if (!error.isFallback) {
+        throw error;
+      }
+
+      // СТАН «ПІСЛЯ»: Graceful Degradation (безпечна відповідь замість падіння системи)
+      console.warn(`🛡️ [PointService] Graceful Degradation активовано для клієнта ${customerId}. Віддаємо деградовану відповідь.`);
+      return {
+        customerId: customerId,
         points: 0,
-        tier: 'Standard' 
+        tier: 'Standard (Offline Mode)',
+        status: 'DEGRADED',
+        warning: 'Сервіс клієнтів тимчасово недоступний. Система працює в режимі Graceful Degradation.',
+        fallbackApplied: true,
+        lastTransactionDate: new Date().toISOString()
       };
     }
-
-    // 3. Оскільки ми "імітували" БД балів, для Gateway віддаємо умовний баланс.
-    // Це дозволить нам ідеально перевірити роботу API Composition!
-    return {
-      customerId: customerId,
-      points: 1500, // Умовні бали, щоб побачити їх у Дашборді Gateway
-      tier: 'Premium',
-      lastTransactionDate: new Date().toISOString()
-    };
   }
 }

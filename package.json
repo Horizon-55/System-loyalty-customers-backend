@@ -2,7 +2,11 @@
     "name": "system-loyalty-customers-backend",
     "private": true,
     "scripts": {
-        "sonar": "npx sonarqube-scanner -Dsonar.token=sqp_d781c281fdb4b5135bebb4e739a1421fb4f3e5ed"
+        "sonar": "npx sonarqube-scanner -Dsonar.token=sqp_d781c281fdb4b5135bebb4e739a1421fb4f3e5ed",
+        "test": "npm test --prefix point-service",
+        "test:resilience": "npm test --prefix point-service",
+        "test:load:pass": "C:\\PROGRA~1\\k6\\k6.exe run load-tests/normal-load-test.js",
+        "test:load:fail": "C:\\PROGRA~1\\k6\\k6.exe run load-tests/stress-load-test.js"
     },
     "dependencies": {
         "typescript": "^7.0.2"

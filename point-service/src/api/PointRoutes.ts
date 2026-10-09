@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { PointController } from './PointController.js';
+import { activeResilienceConfig, setResilienceConfig } from '../infrastructure/http/CustomerServiceClient.js';
 
 export const createPointRoutes = (controller: PointController) => {
     const router = Router();
@@ -199,5 +200,23 @@ export const createPointRoutes = (controller: PointController) => {
    */
   // Важливо: цей роут має ловити ID як параметр URL
   router.get('/:customerId', controller.getBalance);
-    return router;
+
+  // Ендпоінти для керування стійкістю (Live Demo: Стан «ДО» vs Стан «ПІСЛЯ»)
+  router.post('/resilience/toggle', (req, res) => {
+    const { enabled, maxRetries, baseDelayMs, timeoutMs, useJitter } = req.body;
+    setResilienceConfig({
+      ...(enabled !== undefined && { enabled }),
+      ...(maxRetries !== undefined && { maxRetries }),
+      ...(baseDelayMs !== undefined && { baseDelayMs }),
+      ...(timeoutMs !== undefined && { timeoutMs }),
+      ...(useJitter !== undefined && { useJitter }),
+    });
+    res.json({ success: true, activeResilienceConfig });
+  });
+
+  router.get('/resilience/status', (req, res) => {
+    res.json({ activeResilienceConfig });
+  });
+
+  return router;
 }

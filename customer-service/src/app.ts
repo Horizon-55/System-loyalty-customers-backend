@@ -10,6 +10,7 @@ import { errorHandler } from './common/middlewares/errorHandler.middleware.js';
 import { AppError } from './common/middlewares/errors/AppError.js';
 import { createHealthRoutes } from './modules/health/Api/HealthRoutes.js';
 import { tracingMiddleware } from './common/middlewares/tracing.middleware.js';
+import { faultInjectionMiddleware, setFaultMode, activeFaultMode } from './common/middlewares/faultInjection.middleware.js';
 import { RabbitMQConsumer } from './modules/customers/infrastructure/rabbitmq/RabbitMQConsumer.js';
 import { RabbitMQPublisher } from './modules/customers/infrastructure/rabbitmq/RabbitMQPublisher.js';
 
@@ -18,6 +19,7 @@ const app = express();
 app.use(express.json());
 
 app.use(tracingMiddleware);
+app.use(faultInjectionMiddleware);
 const bootstrap = async () => {
   try {
     //1. Підключення до бази даних в памяті
@@ -47,7 +49,20 @@ const bootstrap = async () => {
     app.use('/api/v1/customers', customerRouter);
     //11.Реєструємо всі маршрути модуля Health під базовим шляхом v1
     app.use('/health', healthRouter);
-    //12.Перенаправлення на Swagger документацію
+    // 12. Ендпоінти контролю Fault Injection (для Live Demo)
+    app.post('/api/v1/fault-injection', (req, res) => {
+      const { mode } = req.body;
+      if (mode === '500' || mode === 'timeout' || mode === 'none') {
+        setFaultMode(mode);
+        return res.json({ success: true, activeFaultMode: mode });
+      }
+      res.status(400).json({ error: 'Mode must be 500, timeout, or none' });
+    });
+    app.get('/api/v1/fault-injection', (req, res) => {
+      res.json({ activeFaultMode });
+    });
+
+    //13.Перенаправлення на Swagger документацію
     app.get('/', (req, res) => {
       res.redirect('/api-docs');
     });
