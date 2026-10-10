@@ -1,0 +1,4 @@
+# Gitleaks ignore list for audit artifacts
+reports/secret-scan-fail.txt:github-pat:11
+reports/secret-scan-fail.txt:github-pat:25
+reports/secret-scan-fail.txt:github-pat:26

@@ -2,8 +2,14 @@
     "name": "system-loyalty-customers-backend",
     "private": true,
     "scripts": {
-        "sonar": "npx sonarqube-scanner -Dsonar.token=sqp_d781c281fdb4b5135bebb4e739a1421fb4f3e5ed",
+        "sonar": "npx sonarqube-scanner",
+        "audit": "npm audit --prefix point-service",
+        "audit:fix": "npm audit fix --prefix point-service",
+        "scan:secrets": "node scripts/scan-secrets.js git --staged -v",
+        "scan:secrets:all": "node scripts/scan-secrets.js dir -v",
+        "prepare": "git config core.hooksPath .githooks",
         "test": "npm test --prefix point-service",
+        "test:refactor": "npm run test:refactor --prefix point-service",
         "test:resilience": "npm test --prefix point-service",
         "test:load:pass": "C:\\PROGRA~1\\k6\\k6.exe run load-tests/normal-load-test.js",
         "test:load:fail": "C:\\PROGRA~1\\k6\\k6.exe run load-tests/stress-load-test.js"

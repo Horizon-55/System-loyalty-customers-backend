@@ -1,5 +1,14 @@
-#untracked files
+# Environment variables and secrets
 .env
+.env.*
+.env.local
+.env.development
+.env.test
+.env.production
+!.env.example
+*.pem
+*.key
+LIVE_DEMO_CHECKLIST*.md
 node_modules
 dist
 .DS_Store
