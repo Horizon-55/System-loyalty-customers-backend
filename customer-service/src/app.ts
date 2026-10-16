@@ -10,6 +10,7 @@ import { errorHandler } from './common/middlewares/errorHandler.middleware.js';
 import { AppError } from './common/middlewares/errors/AppError.js';
 import { createHealthRoutes } from './modules/health/Api/HealthRoutes.js';
 import { tracingMiddleware } from './common/middlewares/tracing.middleware.js';
+import { secureHttpLogger } from './common/middlewares/secureHttpLogger.middleware.js';
 import { faultInjectionMiddleware, setFaultMode, activeFaultMode } from './common/middlewares/faultInjection.middleware.js';
 import { RabbitMQConsumer } from './modules/customers/infrastructure/rabbitmq/RabbitMQConsumer.js';
 import { RabbitMQPublisher } from './modules/customers/infrastructure/rabbitmq/RabbitMQPublisher.js';
@@ -19,6 +20,7 @@ const app = express();
 app.use(express.json());
 
 app.use(tracingMiddleware);
+app.use(secureHttpLogger);
 app.use(faultInjectionMiddleware);
 const bootstrap = async () => {
   try {

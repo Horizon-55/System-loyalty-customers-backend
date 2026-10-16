@@ -9,6 +9,7 @@
         "scan:secrets:all": "node scripts/scan-secrets.js dir -v",
         "prepare": "git config core.hooksPath .githooks",
         "test": "npm test --prefix point-service",
+        "test:privacy": "npx tsx --test point-service/tests/privacy*.test.ts",
         "test:refactor": "npm run test:refactor --prefix point-service",
         "test:resilience": "npm test --prefix point-service",
         "test:load:pass": "C:\\PROGRA~1\\k6\\k6.exe run load-tests/normal-load-test.js",

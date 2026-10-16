@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GDPR Article 15 - Personal Data Export Contract",
+  "version": "1.0",
+  "legalBasis": "GDPR Article 15 (Right of Access)",
+  "exportedAt": "2026-10-16T13:12:44.812Z",
+  "subjectId": "cust-synt-001-uuid",
+  "categories": {
+    "profile": {
+      "id": "cust-synt-001-uuid",
+      "name": "Олександр Тестовий",
+      "email": "alex.test@example.com",
+      "phone": "+380501234567"
+    },
+    "loyalty": {
+      "tier": "VIP",
+      "totalPoints": 1200,
+      "history": [
+        {
+          "transactionId": "tx-1791624000-101",
+          "points": 1200,
+          "reason": "Вітальний бонус за реєстрацію",
+          "timestamp": "2026-10-16T13:00:00.000Z"
+        }
+      ]
+    },
+    "settings": {
+      "preferredLanguage": "uk-UA",
+      "notificationsEnabled": true,
+      "theme": "dark"
+    },
+    "consents": [
+      {
+        "purpose": "MARKETING_EMAIL",
+        "isGranted": true,
+        "policyVersion": "v1.0",
+        "grantedAt": "2026-10-16T13:00:00.000Z",
+        "withdrawnAt": null
+      }
+    ]
+  },
+  "documentedOmissions": [
+    "password_hash",
+    "access_and_refresh_tokens",
+    "internal_antifraud_score",
+    "session_secrets",
+    "infrastructure_api_keys"
+  ]
+}
