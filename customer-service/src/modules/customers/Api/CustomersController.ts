@@ -212,4 +212,28 @@ export class CustomerController {
         }
         return points > 2000 ? "PROMO_ODD_SILVER_PLUS" : "PROMO_ODD_GOLD";
     }
+
+    // Data-Driven Discount Matrix (Lookup Table) - PASS стан (CC <= 2)
+    private static readonly CHANNEL_TIER_DISCOUNTS: Readonly<Record<string, number>> = {
+        "WEB:VIP:HIGH": 30,
+        "WEB:VIP:NORMAL": 25,
+        "WEB:GOLD:HIGH": 20,
+        "WEB:GOLD:NORMAL": 15,
+        "WEB:SILVER": 10,
+        "MOBILE:VIP": 35,
+        "MOBILE:GOLD": 25,
+        "MOBILE:SILVER": 15,
+        "POS": 5
+    };
+
+    /**
+     * РЕФАКТОРЕНИЙ МЕТОД: Data-Driven Refactoring (Lookup Table, CC = 2)
+     * Складність знижена з CC = 12 до CC = 2
+     */
+    public evaluateDiscountsLinear(channel: string, tier: string, count: number): number {
+        if (channel === "POS") return CustomerController.CHANNEL_TIER_DISCOUNTS["POS"];
+        const volumeTag = count > 10 ? "HIGH" : (count > 5 ? "HIGH" : "NORMAL");
+        const key = `${channel}:${tier}:${volumeTag}`;
+        return CustomerController.CHANNEL_TIER_DISCOUNTS[key] ?? CustomerController.CHANNEL_TIER_DISCOUNTS[`${channel}:${tier}`] ?? 0;
+    }
 }
