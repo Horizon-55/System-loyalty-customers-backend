@@ -21,4 +21,4 @@ api-gateway/package-lock.json
 *.docx
 ~$*
 reports/docx/
-scripts/generate-docx-report.js
+scripts/generate-docx-*.js
