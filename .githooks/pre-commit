@@ -2,10 +2,11 @@
 # Git Pre-Commit Hook: Automated Secret Leak Prevention via Gitleaks
 echo "[pre-commit] Scanning staged changes for credentials..."
 
+# 1. Secret Leak Prevention Gate
 node scripts/scan-secrets.js git --staged -v
-EXIT_CODE=$?
+SECRETS_EXIT=$?
 
-if [ $EXIT_CODE -ne 0 ]; then
+if [ $SECRETS_EXIT -ne 0 ]; then
     echo ""
     echo "================================================================================"
     echo " [SECURITY ALERT] Gitleaks detected secrets in staged files!"
@@ -16,5 +17,15 @@ if [ $EXIT_CODE -ne 0 ]; then
     exit 1
 fi
 
-echo "[pre-commit] Secrets check passed clean. Proceeding with commit."
+echo "[pre-commit] Secrets check passed clean."
+
+# 2. Cyclomatic Complexity Quality Gate (Limit: CC <= 10)
+node scripts/check-staged-complexity.js
+COMPLEXITY_EXIT=$?
+
+if [ $COMPLEXITY_EXIT -ne 0 ]; then
+    exit 1
+fi
+
+echo "[pre-commit] All Quality Gates PASSED. Proceeding with commit."
 exit 0
