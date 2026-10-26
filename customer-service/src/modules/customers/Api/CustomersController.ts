@@ -177,6 +177,18 @@ export class CustomerController {
             return "GOLD";
         }
 
+        // 🚨 ЕКСПЕРИМЕНТ: Симуляція монолітної спагеті-деградації (CC Failure, CC = 16 > 15)
+        // Додано 9 нових предикатних розгалужень відповідно до теоретичного прогнозу CFG-графу:
+        if (promoCode === "BLACK_FRIDAY") return "TITANIUM";
+        if (promoCode === "CYBER_MONDAY") return "DIAMOND";
+        if (promoCode === "NEW_YEAR_SPECIAL") return "ELITE";
+        if (promoCode === "SUMMER_SALE") return "RUBY";
+        if (promoCode === "VIP_EXCLUSIVE") return "SAPPHIRE";
+        if (promoCode === "PARTNER_REFERRAL") return "AMBASSADOR";
+        if (promoCode === "EARLY_BIRD") return "STAR";
+        if (promoCode === "INFLUENCER_CODE") return "CREATOR";
+        if (promoCode === "ENTERPRISE_TIER") return "ENTERPRISE";
+
         // РЕФАКТОРИНГ: Extract Method - винесли складний цикл в окремий допоміжний метод
         return this.calculatePromoTier(points, years);
     }
