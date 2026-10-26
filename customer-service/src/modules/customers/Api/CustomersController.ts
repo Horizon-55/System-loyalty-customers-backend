@@ -160,49 +160,56 @@ export class CustomerController {
         }
     }
 
-    // РЕФАКТОРИНГ: Використано Guard Clauses (раннє повернення) для зниження Cognitive Complexity
-    public calculateLoyaltyTierAudit(points: number, isActive: boolean, years: number, promoCode?: string): string {
-        // Guard Clause 1: Базові перевірки відсікаються одразу
-        if (points <= 0 || !isActive || years <= 1) {
-            return "BRONZE";
-        }
+    // ========================================================================
+    // DATA-DRIVEN REFACTORING (Lookup Table Pattern) - PASS СТАН (CC = 1..2)
+    // Повністю усунено каскади if/else та switch/case за рахунок статичних таблиць пошуку.
+    // ========================================================================
+    private static readonly SPECIAL_PROMO_LOOKUP: Readonly<Record<string, string>> = {
+        "BLACK_FRIDAY": "TITANIUM",
+        "CYBER_MONDAY": "DIAMOND",
+        "NEW_YEAR_SPECIAL": "ELITE",
+        "SUMMER_SALE": "RUBY",
+        "VIP_EXCLUSIVE": "SAPPHIRE",
+        "PARTNER_REFERRAL": "AMBASSADOR",
+        "EARLY_BIRD": "STAR",
+        "INFLUENCER_CODE": "CREATOR",
+        "ENTERPRISE_TIER": "ENTERPRISE"
+    };
 
-        // Guard Clause 2: Перевірка на срібний рівень
-        if (points <= 1000) {
-            return "SILVER";
-        }
+    // Декларативна таблиця переходів станів лояльності (Data-Driven Matrix)
+    private static readonly TIER_DECISION_TABLE: Readonly<Record<string, string>> = {
+        "INELIGIBLE": "BRONZE",
+        "SILVER_BAND": "SILVER",
+        "NO_PROMO": "GOLD",
+        "PROMO_EVEN_PLATINUM": "PLATINUM",
+        "PROMO_EVEN_GOLD": "GOLD",
+        "PROMO_ODD_SILVER_PLUS": "SILVER_PLUS",
+        "PROMO_ODD_GOLD": "GOLD"
+    };
 
-        // Guard Clause 3: Перевірка наявності валідного промокоду
-        if (!promoCode || promoCode.length <= 3) {
-            return "GOLD";
-        }
+    /**
+     * Лінеаризований розрахунок рівня лояльності (Data-Driven Refactoring)
+     * Складність методу знижена до абсолютного мінімуму (CC = 2).
+     */
+    public calculateLoyaltyTierAudit(points: number, isActive: boolean, years: number, promoCode: string = ""): string {
+        const promoTier = CustomerController.SPECIAL_PROMO_LOOKUP[promoCode];
+        if (promoTier) return promoTier;
 
-        // 🚨 ЕКСПЕРИМЕНТ: Симуляція монолітної спагеті-деградації (CC Failure, CC = 16 > 15)
-        // Додано 9 нових предикатних розгалужень відповідно до теоретичного прогнозу CFG-графу:
-        if (promoCode === "BLACK_FRIDAY") return "TITANIUM";
-        if (promoCode === "CYBER_MONDAY") return "DIAMOND";
-        if (promoCode === "NEW_YEAR_SPECIAL") return "ELITE";
-        if (promoCode === "SUMMER_SALE") return "RUBY";
-        if (promoCode === "VIP_EXCLUSIVE") return "SAPPHIRE";
-        if (promoCode === "PARTNER_REFERRAL") return "AMBASSADOR";
-        if (promoCode === "EARLY_BIRD") return "STAR";
-        if (promoCode === "INFLUENCER_CODE") return "CREATOR";
-        if (promoCode === "ENTERPRISE_TIER") return "ENTERPRISE";
-
-        // РЕФАКТОРИНГ: Extract Method - винесли складний цикл в окремий допоміжний метод
-        return this.calculatePromoTier(points, years);
+        return CustomerController.TIER_DECISION_TABLE[this.deriveTierKey(points, isActive, years, promoCode)] ?? "BRONZE";
     }
 
-    // Допоміжний метод для розрахунку промо-рівня (Cognitive Complexity тут мінімальна)
-    private calculatePromoTier(points: number, years: number): string {
-        let tier = "GOLD";
-        for (let i = 0; i < years; i++) {
-            if (i % 2 === 0) {
-                tier = points > 5000 ? "PLATINUM" : "GOLD";
-            } else if (points > 2000) {
-                tier = "SILVER_PLUS";
-            }
+    /**
+     * Селектор композитного ключа для таблиці пошуку
+     */
+    private deriveTierKey(points: number, isActive: boolean, years: number, promoCode?: string): string {
+        if (points <= 0 || !isActive || years <= 1) return "INELIGIBLE";
+        if (points <= 1000) return "SILVER_BAND";
+        if (!promoCode || promoCode.length <= 3) return "NO_PROMO";
+
+        const isLastIterEven = (years - 1) % 2 === 0;
+        if (isLastIterEven) {
+            return points > 5000 ? "PROMO_EVEN_PLATINUM" : "PROMO_EVEN_GOLD";
         }
-        return tier;
+        return points > 2000 ? "PROMO_ODD_SILVER_PLUS" : "PROMO_ODD_GOLD";
     }
 }
