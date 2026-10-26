@@ -13,9 +13,12 @@
         "test:refactor": "npm run test:refactor --prefix point-service",
         "test:resilience": "npm test --prefix point-service",
         "test:load:pass": "C:\\PROGRA~1\\k6\\k6.exe run load-tests/normal-load-test.js",
-        "test:load:fail": "C:\\PROGRA~1\\k6\\k6.exe run load-tests/stress-load-test.js"
+        "test:load:fail": "C:\\PROGRA~1\\k6\\k6.exe run load-tests/stress-load-test.js",
+        "check:quality-gate": "node scripts/verify-quality-gate.js",
+        "test:ops:reliability": "node scripts/test-ops-reliability.js",
+        "test:ops:stability": "node scripts/test-ops-stability.js"
     },
     "dependencies": {
-        "typescript": "^7.0.2"
+        "typescript": "7.0.2"
     }
 }

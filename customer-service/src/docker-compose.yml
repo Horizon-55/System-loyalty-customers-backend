@@ -5,7 +5,7 @@ services:
     image: rabbitmq:3-management
     container_name: customer-service-loyalty-rabbitmq
     ports:
-      - "5672:5672"   # Порт для спілкування наших мікросервісів з брокером
+      - "5672:5672" # Порт для спілкування наших мікросервісів з брокером
       - "15672:15672" # Порт для візуального веб-інтерфейсу (Management UI)
     environment:
       RABBITMQ_DEFAULT_USER: guest
@@ -23,3 +23,12 @@ services:
 
 volumes:
   rabbitmq_data:
+
+deploy:
+  resources:
+    limits:
+      cpus: '2.0'
+      memory: 2048M
+    reservations:
+      cpus: '1.0'
+      memory: 1024M
