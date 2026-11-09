@@ -6,15 +6,15 @@
     "measures": [
       {
         "metric": "class_complexity",
-        "value": "31"
+        "value": "11"
       },
       {
         "metric": "coupling_between_objects",
-        "value": "16"
+        "value": "15"
       },
       {
         "metric": "lcom4",
-        "value": "2"
+        "value": "3"
       },
       {
         "metric": "depth_in_tree",
@@ -22,7 +22,7 @@
       },
       {
         "metric": "response_for_class",
-        "value": "33"
+        "value": "20"
       }
     ]
   }

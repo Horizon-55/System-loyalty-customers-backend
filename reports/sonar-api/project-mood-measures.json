@@ -6,27 +6,27 @@
     "measures": [
       {
         "metric": "method_hiding_factor",
-        "value": "6.8"
+        "value": "6.1"
       },
       {
         "metric": "attribute_hiding_factor",
-        "value": "51.4"
+        "value": "53.4"
       },
       {
         "metric": "coupling_factor",
-        "value": "17.5"
+        "value": "17.2"
       },
       {
         "metric": "classes",
-        "value": "22"
+        "value": "25"
       },
       {
         "metric": "functions",
-        "value": "88"
+        "value": "98"
       },
       {
         "metric": "ncloc",
-        "value": "2621"
+        "value": "2790"
       }
     ]
   }
