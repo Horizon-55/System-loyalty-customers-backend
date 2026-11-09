@@ -9,3 +9,4 @@ export interface ICustomerCoreService {
     registerCustomer(dto: CreateCustomerDto): Promise<CustomerResponseDto>;
     upgradeToPremium(id: string): Promise<void>;
 }
+

@@ -17,3 +17,4 @@ export interface ICustomerPrivacyService {
         correlationId?: string
     ): Promise<AnonymizeCustomerResultDto>;
 }
+
