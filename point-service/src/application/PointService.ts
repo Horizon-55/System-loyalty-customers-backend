@@ -147,4 +147,85 @@ export class PointService {
       };
     }
   }
+
+  /**
+   * ЛАБОРАТОРНА РОБОТА №7 - Завдання 1:
+   * Розрахунок та фінансовий сеттлмент бонусів лояльності за чеком замовлення.
+   * Початковий стан: лінійний за Мак-Кейбом (CC = 3), але містить інформаційний хаос (високий Chapin C_ch = 29.5)
+   * та високий ризик дефектів неконтрольованої мутації примітивних змінних (тип M).
+   */
+  public settleOrderLoyaltyTransaction(
+    customerId: string,
+    orderId: string,
+    rawAmount: number,
+    currency: string,
+    discountPercentage: number,
+    taxRate: number,
+    bonusMultiplier: number,
+    channel: string,
+    correlationId: string
+  ): {
+    customerId: string;
+    orderId: string;
+    currency: string;
+    rawAmount: number;
+    discountAmount: number;
+    taxAmount: number;
+    finalPayable: number;
+    rewardPoints: number;
+    status: string;
+  } {
+    // 1. Контрольні перевірки валідності вхідних даних (Низька цикломатична складність CC <= 5)
+    if (rawAmount <= 0) {
+      throw new Error("Сума транзакції повинна бути строго додатною.");
+    }
+    if (currency !== "UAH") {
+      throw new Error(`Непідтримувана валюта розрахунку: ${currency}`);
+    }
+    if (discountPercentage > 100) {
+      throw new Error("Відсоток знижки не може перевищувати 100%.");
+    }
+
+    // 2. Локальні мутабельні змінні (клас M за Чепіним)
+    let discountAmount: number = 0;
+    let taxableAmount: number = 0;
+    let taxAmount: number = 0;
+    let finalPayable: number = 0;
+    let rewardPoints: number = 0;
+    let status: string = "INITIALIZED";
+    let auditChannelTag: string = "STANDARD";
+
+    // 3. Керуюче розгалуження за каналом продажу (channel - клас C за Чепіним)
+    if (channel === "MOBILE_APP") {
+      auditChannelTag = "DIGITAL";
+    } else {
+      auditChannelTag = "IN_STORE";
+    }
+
+    // 4. Обчислення зі зміною проміжних змінних стану
+    discountAmount = (rawAmount * discountPercentage) / 100;
+
+    // 🚨 КРАШ-ТЕСТ: Симуляція неконтрольованої мутації даних (Data Mutation Flaw, FAIL)
+    // Через відсутність захисту імутабельності (використання mutable змінних типу M)
+    // значення знижки помилково перезаписує базову ціну товару, викликаючи фінансовий касовий розрив!
+    rawAmount = discountAmount; // ПОМИЛКА МУТАЦІЇ: базова ціна 1000 замінена на знижку 100!
+    taxableAmount = rawAmount - discountAmount; // 100 - 100 = 0 замість 900!
+    taxAmount = taxableAmount * taxRate; // 0 замість 180!
+    finalPayable = taxableAmount + taxAmount; // 0 замість 1080 грн!
+    rewardPoints = Math.floor(finalPayable * bonusMultiplier); // 0 балів замість 2160!
+    status = "SETTLED";
+
+    // 5. Повернення агрегованого результату
+    return {
+      customerId,
+      orderId,
+      currency,
+      rawAmount,
+      discountAmount,
+      taxAmount,
+      finalPayable,
+      rewardPoints,
+      status: `${status}_${auditChannelTag}`
+    };
+  }
 }

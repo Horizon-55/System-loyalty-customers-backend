@@ -18,7 +18,8 @@
         "test:ops:reliability": "node scripts/test-ops-reliability.js",
         "test:ops:stability": "node scripts/test-ops-stability.js",
         "complexity:baseline": "node scripts/complexity-analyzer.js --baseline",
-        "complexity:compare": "node scripts/complexity-analyzer.js --compare-layers"
+        "complexity:compare": "node scripts/complexity-analyzer.js --compare-layers",
+        "chapin:audit": "node scripts/chapin-analyzer.js"
     },
     "dependencies": {
         "typescript": "7.0.2"
