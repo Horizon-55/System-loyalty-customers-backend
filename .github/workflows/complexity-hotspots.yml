@@ -25,8 +25,8 @@ jobs:
 
       - name: Install Monorepo Dependencies
         run: |
-          npm install
-          npm install --prefix customer-service
+          npm install --ignore-scripts
+          npm install --prefix customer-service/src
           npm install --prefix point-service
 
       - name: Execute Ned Chapin Semantic Data Complexity Audit (Lab 7)
@@ -56,3 +56,4 @@ jobs:
           path: |
             reports/hotspots-matrix.json
           retention-days: 30
+

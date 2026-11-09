@@ -262,3 +262,4 @@ quadrantChart
 4. Пройдено всі верифікаційні юніт-тести та зафіксовано Git PASS-стан (`5abb739`).
 5. Налаштовано GitHub Actions CI workflow та побудовано 4-квадрантну матрицю Hotspots на основі Code Churn.
 6. Згенеровано звіт у форматі Word DOCX (`reports/docx/Звіт_Лабораторна_Робота_7_Чепін_Hotspots_Аудит.docx`).
+

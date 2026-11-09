@@ -1,0 +1,10 @@
+{
+  "name": "customer-service",
+  "version": "1.0.0",
+  "description": "Customer Service root proxy",
+  "private": true,
+  "scripts": {
+    "start": "npm start --prefix src",
+    "test": "npm test --prefix src"
+  }
+}
