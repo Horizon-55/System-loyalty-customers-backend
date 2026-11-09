@@ -131,6 +131,34 @@ const LEGACY_VARIABLE_INVENTORY = [
     }
 ];
 
+// ============================================================================
+// СТАН «ПІСЛЯ» (Refactored Immutable Value Objects)
+// Об'єкт: PointService.settleOrderLoyaltyTransaction(orderAmount, context, policy)
+// ============================================================================
+const REFACTORED_VARIABLE_INVENTORY = [
+    {
+        name: 'orderAmount',
+        type: 'Money (VO)',
+        roles: ['P'],
+        assignedClass: 'P',
+        justification: 'Імутабельний Value Object, передається як чисте пасивне посилання без мутацій'
+    },
+    {
+        name: 'context',
+        type: 'TransactionContext (VO)',
+        roles: ['P'],
+        assignedClass: 'P',
+        justification: 'Імутабельний Value Object, містить усі аудиторські інваріанти, жодних мутацій чи умов'
+    },
+    {
+        name: 'policy',
+        type: 'LoyaltyRewardPolicy (VO)',
+        roles: ['P'],
+        assignedClass: 'P',
+        justification: 'Імутабельний доменний об\'єкт бізнес-правил, виконує чисту детерміновану дію'
+    }
+];
+
 function calculateChapin(inventory) {
     const counts = { P: 0, M: 0, C: 0, T: 0 };
     inventory.forEach(item => {
@@ -145,53 +173,60 @@ function calculateChapin(inventory) {
     return { counts, c_ch };
 }
 
-function runAudit() {
-    console.log('================================================================');
-    console.log('  NED CHAPIN SEMANTIC DATA COMPLEXITY AUDIT (LABORATORY WORK 7)');
-    console.log('================================================================\n');
-
-    console.log('Target Method: PointService.settleOrderLoyaltyTransaction');
-    console.log('McCabe Cyclomatic Complexity: CC = 5 (Low Topological Complexity, CC <= 5)');
-    console.log('Examined Variable Count: ' + LEGACY_VARIABLE_INVENTORY.length + ' variables\n');
-
-    const result = calculateChapin(LEGACY_VARIABLE_INVENTORY);
-
-    console.log('| #  | Variable Name          | Data Type | Roles   | Chapin Class | Weight | Justification |');
-    console.log('|:---|:-----------------------|:----------|:--------|:------------:|:------:|:--------------|');
-    LEGACY_VARIABLE_INVENTORY.forEach((v, i) => {
+function printInventoryTable(inventory, title) {
+    console.log(`\n### ${title}`);
+    console.log('| #  | Variable Name          | Data Type             | Roles   | Chapin Class | Weight | Justification |');
+    console.log('|:---|:-----------------------|:----------------------|:--------|:------------:|:------:|:--------------|');
+    inventory.forEach((v, i) => {
         const num = String(i + 1).padEnd(2);
         const name = v.name.padEnd(22);
-        const type = v.type.padEnd(9);
+        const type = v.type.padEnd(21);
         const roles = v.roles.join(',').padEnd(7);
         const cls = v.assignedClass.padEnd(12);
         const weight = String(CHAPIN_WEIGHTS[v.assignedClass]).padEnd(6);
         console.log(`| ${num} | ${name} | ${type} | ${roles} | ${cls} | ${weight} | ${v.justification} |`);
     });
+}
 
-    console.log('\n--- Group Counts by Chapin Classes ---');
-    console.log(`  - Control (C, weight 3.0) : ${result.counts.C} variables -> Subtotal: ${result.counts.C * CHAPIN_WEIGHTS.C}`);
-    console.log(`  - Modified (M, weight 2.0): ${result.counts.M} variables -> Subtotal: ${result.counts.M * CHAPIN_WEIGHTS.M}`);
-    console.log(`  - Passive (P, weight 1.0) : ${result.counts.P} variables -> Subtotal: ${result.counts.P * CHAPIN_WEIGHTS.P}`);
-    console.log(`  - Transit (T, weight 0.5) : ${result.counts.T} variables -> Subtotal: ${result.counts.T * CHAPIN_WEIGHTS.T}`);
+function runAudit() {
+    console.log('================================================================================');
+    console.log('   ENTERPRISE NED CHAPIN SEMANTIC DATA COMPLEXITY AUDIT & COMPARISON            ');
+    console.log('================================================================================\n');
 
-    console.log('\n--- Chapin Complexity Formula Calculation ---');
-    console.log(`  C_ch = (1 * P) + (2 * M) + (3 * C) + (0.5 * T)`);
-    console.log(`  C_ch = (1 * ${result.counts.P}) + (2 * ${result.counts.M}) + (3 * ${result.counts.C}) + (0.5 * ${result.counts.T})`);
-    console.log(`  C_ch = ${result.counts.P * 1} + ${result.counts.M * 2} + ${result.counts.C * 3} + ${result.counts.T * 0.5} = ${result.c_ch}`);
+    const legacy = calculateChapin(LEGACY_VARIABLE_INVENTORY);
+    const refactored = calculateChapin(REFACTORED_VARIABLE_INVENTORY);
 
-    console.log('\n--- Engineering Assessment ---');
-    if (result.c_ch > 10) {
-        console.log(`🚨 CRITICAL DATA CHAOS: C_ch = ${result.c_ch} > 10.0 (Enterprise Risk Threshold Exceeded!).`);
-        console.log('   The method has low cyclomatic complexity (CC=5), but extreme data entanglement.');
-        console.log('   High proportion of mutable M-variables (7) introduces critical vulnerability to mutation bugs.');
-    } else {
-        console.log(`✓ SAFE: C_ch = ${result.c_ch} <= 10.0.`);
-    }
+    printInventoryTable(LEGACY_VARIABLE_INVENTORY, 'СТАН «ДО» (Legacy Mutable Primitives: PointService.settleOrderLoyaltyTransaction)');
+    console.log(`  Підсумки ДО: C = ${legacy.counts.C}, M = ${legacy.counts.M}, P = ${legacy.counts.P}, T = ${legacy.counts.T}`);
+    console.log(`  Формула ДО: C_ch = (1 * ${legacy.counts.P}) + (2 * ${legacy.counts.M}) + (3 * ${legacy.counts.C}) + (0.5 * ${legacy.counts.T}) = ${legacy.c_ch}`);
+
+    printInventoryTable(REFACTORED_VARIABLE_INVENTORY, 'СТАН «ПІСЛЯ» (Refactored Immutable Value Objects: PointService.settleOrderLoyaltyTransaction)');
+    console.log(`  Підсумки ПІСЛЯ: C = ${refactored.counts.C}, M = ${refactored.counts.M}, P = ${refactored.counts.P}, T = ${refactored.counts.T}`);
+    console.log(`  Формула ПІСЛЯ: C_ch = (1 * ${refactored.counts.P}) + (2 * ${refactored.counts.M}) + (3 * ${refactored.counts.C}) + (0.5 * ${refactored.counts.T}) = ${refactored.c_ch}`);
+
+    const reductionPercent = (((legacy.c_ch - refactored.c_ch) / legacy.c_ch) * 100).toFixed(2);
+
+    console.log('\n================================================================================');
+    console.log('   ПОРІВНЯЛЬНИЙ ЗВЕДЕНИЙ АНАЛІЗ ЕФЕКТИВНОСТІ РЕФАКТОРИНГУ (AUDIT SUMMARY)      ');
+    console.log('================================================================================');
+    console.log(`- Початкова складність Чепіна (Baseline)   : C_ch = ${legacy.c_ch} (Критичний поріг > 10)`);
+    console.log(`- Оптимізована складність (Refactored)     : C_ch = ${refactored.c_ch} (Цільовий норматив <= 6.0)`);
+    console.log(`- Відносне зниження інформаційного хаосу  : -${reductionPercent}% (Вимога методички: >= 50%)`);
+    console.log(`- Змінні модифікації стану (Клас M)        : ${legacy.counts.M} -> ${refactored.counts.M} (Повна ліквідація M = 0)`);
+    console.log(`- Керуючі змінні розгалужень (Клас C)      : ${legacy.counts.C} -> ${refactored.counts.C} (Інкапсульовано у Value Objects)`);
+    console.log('================================================================================\n');
+
+    return { legacy, refactored, reductionPercent };
 }
 
 if (require.main === module) {
     runAudit();
 }
 
-module.exports = { calculateChapin, LEGACY_VARIABLE_INVENTORY, CHAPIN_WEIGHTS };
-
+module.exports = {
+    calculateChapin,
+    LEGACY_VARIABLE_INVENTORY,
+    REFACTORED_VARIABLE_INVENTORY,
+    CHAPIN_WEIGHTS,
+    runAudit
+};
