@@ -1,0 +1,58 @@
+name: Enterprise Quality Gate & Complexity Hotspots CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  complexity-and-hotspots-audit:
+    name: Code Complexity & Hotspots Quality Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code with Full Git History
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full commit history required for Code Churn calculation
+
+      - name: Setup Node.js Runtime Environment (v20 LTS)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Monorepo Dependencies
+        run: |
+          npm install
+          npm install --prefix customer-service
+          npm install --prefix point-service
+
+      - name: Execute Ned Chapin Semantic Data Complexity Audit (Lab 7)
+        run: |
+          echo "=== EXECUTING CHAPIN DATA COMPLEXITY AUDIT ==="
+          npm run chapin:audit
+
+      - name: Verify Mutation Immunity Unit Tests (PASS State)
+        run: |
+          echo "=== RUNNING MUTATION IMMUNITY SUITE ==="
+          npm run test:mutation
+
+      - name: Execute Global Halstead & McCabe Baseline Telemetry
+        run: |
+          echo "=== RUNNING GLOBAL COMPLEXITY TELEMETRY ==="
+          npm run complexity:baseline
+
+      - name: Generate Synergistic Hotspots Risk Matrix & Export JSON
+        run: |
+          echo "=== GENERATING 4-QUADRANT HOTSPOTS MATRIX ==="
+          npm run hotspots:audit
+
+      - name: Upload Complexity & Hotspots Audit Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: complexity-hotspots-telemetry
+          path: |
+            reports/hotspots-matrix.json
+          retention-days: 30

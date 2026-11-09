@@ -1,0 +1,100 @@
+{
+  "generatedAt": "2026-11-09T08:57:50.085Z",
+  "author": "Antigravity Lead Architect (Lab 7)",
+  "thresholds": {
+    "churn": 3,
+    "maxCC": 8
+  },
+  "matrix": [
+    {
+      "fileName": "CustomersController.ts",
+      "filePath": "customer-service/src/modules/customers/Api/CustomersController.ts",
+      "layer": "Integration / API Controller",
+      "service": "customer-service",
+      "sloc": 167,
+      "churnCommits": 7,
+      "maxCC": 10,
+      "totalCC": 60,
+      "halsteadEffort": 153048,
+      "halsteadVolume": 5726,
+      "quadrant": "Hotspot (Червона зона)",
+      "riskLevel": "CRITICAL",
+      "recommendedAction": "Терміновий рефакторинг та декомпозиція, покриття інтеграційними тестами"
+    },
+    {
+      "fileName": "CustomerServiceClient.ts",
+      "filePath": "point-service/src/infrastructure/http/CustomerServiceClient.ts",
+      "layer": "Integration / Resilience HTTP Client",
+      "service": "point-service",
+      "sloc": 106,
+      "churnCommits": 2,
+      "maxCC": 18,
+      "totalCC": 26,
+      "halsteadEffort": 47307,
+      "halsteadVolume": 2088,
+      "quadrant": "Sleeping Danger (Жовта зона)",
+      "riskLevel": "HIGH_LATENT",
+      "recommendedAction": "Спляча міна. Заборонено модифікувати без попереднього модульного тестування"
+    },
+    {
+      "fileName": "PiiSanitizer.ts",
+      "filePath": "customer-service/src/common/logging/PiiSanitizer.ts",
+      "layer": "Utility / Security Masking Engine",
+      "service": "customer-service",
+      "sloc": 91,
+      "churnCommits": 1,
+      "maxCC": 17,
+      "totalCC": 31,
+      "halsteadEffort": 32663,
+      "halsteadVolume": 2066,
+      "quadrant": "Sleeping Danger (Жовта зона)",
+      "riskLevel": "HIGH_LATENT",
+      "recommendedAction": "Спляча міна. Заборонено модифікувати без попереднього модульного тестування"
+    },
+    {
+      "fileName": "PointService.ts",
+      "filePath": "point-service/src/application/PointService.ts",
+      "layer": "Core Domain / Transactional Business Logic",
+      "service": "point-service",
+      "sloc": 151,
+      "churnCommits": 7,
+      "maxCC": 4,
+      "totalCC": 14,
+      "halsteadEffort": 19208,
+      "halsteadVolume": 2614,
+      "quadrant": "Active Development (Зелена зона)",
+      "riskLevel": "LOW_HEALTHY",
+      "recommendedAction": "Здорова інтенсивна розробка. Код часто змінюється, але залишається чистим"
+    },
+    {
+      "fileName": "PointRoutes.ts",
+      "filePath": "point-service/src/api/PointRoutes.ts",
+      "layer": "Routing / HTTP Dispatcher",
+      "service": "point-service",
+      "sloc": 24,
+      "churnCommits": 4,
+      "maxCC": 6,
+      "totalCC": 13,
+      "halsteadEffort": 2808,
+      "halsteadVolume": 521,
+      "quadrant": "Active Development (Зелена зона)",
+      "riskLevel": "LOW_HEALTHY",
+      "recommendedAction": "Здорова інтенсивна розробка. Код часто змінюється, але залишається чистим"
+    },
+    {
+      "fileName": "Money.ts",
+      "filePath": "point-service/src/domain/Money.ts",
+      "layer": "Domain / Immutable Value Object",
+      "service": "point-service",
+      "sloc": 55,
+      "churnCommits": 1,
+      "maxCC": 3,
+      "totalCC": 12,
+      "halsteadEffort": 38115,
+      "halsteadVolume": 1181,
+      "quadrant": "Stable Code (Сіра зона)",
+      "riskLevel": "NEGLIGIBLE",
+      "recommendedAction": "Стабільне ядро системи. Не потребує втручання"
+    }
+  ]
+}

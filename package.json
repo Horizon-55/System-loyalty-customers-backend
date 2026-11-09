@@ -19,7 +19,9 @@
         "test:ops:stability": "node scripts/test-ops-stability.js",
         "complexity:baseline": "node scripts/complexity-analyzer.js --baseline",
         "complexity:compare": "node scripts/complexity-analyzer.js --compare-layers",
-        "chapin:audit": "node scripts/chapin-analyzer.js"
+        "chapin:audit": "node scripts/chapin-analyzer.js",
+        "hotspots:audit": "node scripts/hotspots-analyzer.js",
+        "test:mutation": "npx tsx --test point-service/tests/chapinMutationCrash.test.ts"
     },
     "dependencies": {
         "typescript": "7.0.2"
