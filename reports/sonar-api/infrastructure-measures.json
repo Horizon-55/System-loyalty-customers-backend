@@ -1,0 +1,29 @@
+{
+  "component": {
+    "key": "System-loyalty-customers-backend:customer-service/src/modules/customers/Api/CustomersController.ts",
+    "name": "CustomersController.ts",
+    "qualifier": "FIL",
+    "measures": [
+      {
+        "metric": "class_complexity",
+        "value": "60"
+      },
+      {
+        "metric": "coupling_between_objects",
+        "value": "7"
+      },
+      {
+        "metric": "lcom4",
+        "value": "4"
+      },
+      {
+        "metric": "depth_in_tree",
+        "value": "1"
+      },
+      {
+        "metric": "response_for_class",
+        "value": "28"
+      }
+    ]
+  }
+}

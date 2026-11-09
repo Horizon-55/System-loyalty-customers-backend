@@ -21,6 +21,8 @@
         "complexity:compare": "node scripts/complexity-analyzer.js --compare-layers",
         "chapin:audit": "node scripts/chapin-analyzer.js",
         "hotspots:audit": "node scripts/hotspots-analyzer.js",
+        "sonar:audit": "node scripts/sonar-metrics-engine.js",
+        "sonar:server": "node scripts/sonar-metrics-engine.js --server",
         "test:mutation": "npx tsx --test point-service/tests/chapinMutationCrash.test.ts"
     },
     "dependencies": {

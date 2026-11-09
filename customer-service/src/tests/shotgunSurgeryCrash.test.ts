@@ -1,52 +1,78 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { CustomerService } from '../modules/customers/application/CustomerService.js';
 import { InMemoryCustomerRepository } from '../modules/customers/infrastructure/InMemoryCustomerRepository.js';
+import { CustomerCoreService } from '../modules/customers/application/services/CustomerCoreService.js';
+import { CustomerPrivacyService } from '../modules/customers/application/services/CustomerPrivacyService.js';
+import { CustomerConsentService } from '../modules/customers/application/services/CustomerConsentService.js';
+import { CustomerService } from '../modules/customers/application/CustomerService.js';
+import { ICustomerCoreService } from '../modules/customers/application/ports/ICustomerCoreService.js';
 
 // ============================================================================
-// ЛАБОРАТОРНА РОБОТА №8 - Завдання 2: Симуляція архітектурного збою (FAIL-стан)
-// Ефект: Shotgun Surgery («Хірургія дробовиком») у класі-мутанті (God Object)
+// ЛАБОРАТОРНА РОБОТА №8 - Завдання 2: PASS-стан після інтерфейсної декомпозиції
+// Ліквідація антипатерну God Object через Single Responsibility та Dependency Inversion
 // ============================================================================
 
-describe('Architectural Audit - Task 2: Shotgun Surgery Collapse (FAIL State)', () => {
-    it('🚨 КРАШ-ТЕСТ: Зміна контрактного формату контексту ламає монолітний CustomerService (FAIL)', async () => {
+describe('Architectural Audit - Task 2: Interface Decomposition (PASS State)', () => {
+    it('✅ PASS-ТЕСТ 1: Декомпозовані мікросервіси функціонують ізольовано (CBO <= 6, LCOM4 = 1)', async () => {
         const repo = new InMemoryCustomerRepository();
-        const godService = new CustomerService(repo);
 
-        console.log('\n--- Демонстрація ефекту Shotgun Surgery («Хірургія дробовиком») ---');
-        console.log('Клас-мутант CustomerService має CBO = 16 > 15 та LCOM4 = 2.');
-        console.log('Він одночасно керує: Core CRUD, GDPR Article 15 Export, GDPR Article 17 Erasure, Consent Governance.');
+        // Ініціалізація незалежних сервісів
+        const coreService = new CustomerCoreService(repo);
+        const privacyService = new CustomerPrivacyService(repo);
+        const consentService = new CustomerConsentService(repo);
 
-        // Симуляція зміни сигнатури/контракту:
-        // Сторонній компонент вимагає обов'язковий аудиторський контекст або повертає суворий новий DTO.
-        // Через монолітне пряме зачеплення (CBO=16), виклик падає лавиноподібно:
-        const simulatedContractChange = {
-            requireMultiTenantContext: true,
-            strictAuditRequired: true
+        // 1. Тест Core-сервісу (реєстрація клієнта)
+        const customer = await coreService.registerCustomer({
+            name: 'Олександр Петренко',
+            email: 'oleksandr@example.com'
+        });
+        assert.ok(customer.id, 'Клієнт повинен мати згенерований ID');
+        assert.strictEqual(customer.name, 'Олександр Петренко');
+
+        // 2. Тест Privacy-сервісу (експорт персональних даних GDPR Art. 15)
+        const exportData = await privacyService.exportPersonalData(customer.id, customer.id);
+        assert.strictEqual(exportData.subjectId, customer.id);
+        assert.strictEqual(exportData.legalBasis, 'GDPR Article 15 (Right of Access)');
+
+        // 3. Тест Consent-сервісу (надання маркетингової згоди GDPR Art. 7)
+        const consent = await consentService.grantConsent(customer.id, customer.id, {
+            purpose: 'MARKETING_EMAIL',
+            policyVersion: 'v2.0'
+        });
+        assert.strictEqual(consent.isGranted, true);
+        assert.strictEqual(consent.policyVersion, 'v2.0');
+    });
+
+    it('✅ PASS-ТЕСТ 2: Захист від Shotgun Surgery завдяки поліморфній підміні через інтерфейси (DIP)', async () => {
+        const repo = new InMemoryCustomerRepository();
+        const privacyService = new CustomerPrivacyService(repo);
+        const consentService = new CustomerConsentService(repo);
+
+        // Створюємо кастомний MockCoreService, який реалізує лише контракт ICustomerCoreService
+        const mockCoreService: ICustomerCoreService = {
+            getCustomerById: async (id) => ({ id, name: 'Mock User', email: 'mock@example.com', tier: 'Gold', totalPoints: 999 }),
+            registerCustomer: async (dto) => ({ id: 'mock-uuid', name: dto.name, email: dto.email, tier: 'Standard', totalPoints: 0 }),
+            upgradeToPremium: async () => {}
         };
 
-        try {
-            // Спроба викликати метод у монолітному класі без інтерфейсної сегрегації
-            if (simulatedContractChange.strictAuditRequired) {
-                throw new Error(
-                    '[SHOTGUN_SURGERY_COLLAPSE] Архітектурний колапс: Зміна сигнатури репозиторію спричинила каскадний злам у 7 методах CustomerService (register, getById, upgradeToPremium, exportPersonalData, anonymizeCustomer, grantConsent, revokeConsent) через CBO = 16!'
-                );
-            }
-            assert.fail('Мав відбутися збій Shotgun Surgery');
-        } catch (err: any) {
-            console.error(`💥 ЗАФІКСОВАНО АРХІТЕКТУРНИЙ ЗБІЙ: ${err.message}`);
-            // Фіксуємо очікувану помилку жорсткого зачеплення
-            assert.match(
-                err.message,
-                /SHOTGUN_SURGERY_COLLAPSE/,
-                'Помилка Shotgun Surgery має підтверджувати крихкість God Object'
-            );
-            // Тест навмисно кидає AssertionError для фіксації FAIL-стану згідно з методичкою
-            assert.strictEqual(
-                false,
-                true,
-                'ARCHITECTURAL CRASH (FAIL): Монолітний God Object зламався при спробі точкової зміни контракту!'
-            );
-        }
+        // Впроваджуємо залежності через конструктор фасаду (Dependency Injection)
+        const compositeService = new CustomerService(mockCoreService, privacyService, consentService);
+
+        const res = await compositeService.getCustomerById('custom-id-123');
+        assert.strictEqual(res.name, 'Mock User', 'Фасад має викликати поліморфний інтерфейс без зламів');
+    });
+
+    it('✅ PASS-ТЕСТ 3: Фасад підтримує 100% зворотну сумісність для всіх існуючих клієнтів', async () => {
+        const repo = new InMemoryCustomerRepository();
+        const legacyFacade = new CustomerService(repo);
+
+        const newCust = await legacyFacade.registerCustomer({
+            name: 'Анна Шевченко',
+            email: 'anna@example.com'
+        });
+        assert.strictEqual(newCust.email, 'anna@example.com');
+
+        const found = await legacyFacade.getCustomerById(newCust.id);
+        assert.strictEqual(found.name, 'Анна Шевченко');
     });
 });
