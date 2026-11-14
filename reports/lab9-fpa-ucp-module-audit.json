@@ -1,0 +1,104 @@
+{
+  "audit": "Lab 9 / Task 3 - Functional Size Measurement: FPA (IFPUG) & Use Case Points (Karner)",
+  "object": {
+    "project": "typeorm (typeorm_typeorm)",
+    "isolatedBusinessModule": "Migration Lifecycle Management",
+    "moduleClasses": [
+      {
+        "file": "packages/typeorm/src/migration/Migration.ts",
+        "role": "Domain entity (DB row: id, timestamp, name, instance, transaction)",
+        "loc": 54
+      },
+      {
+        "file": "packages/typeorm/src/migration/MigrationExecutor.ts",
+        "role": "Core executor service (public API surface of the module)",
+        "loc": 763
+      },
+      {
+        "file": "packages/typeorm/src/migration/MigrationInterface.ts",
+        "role": "Contract (up/down) for user-supplied migration definitions",
+        "loc": 29
+      },
+      {
+        "file": "packages/typeorm/src/commands/MigrationRunCommand.ts",
+        "role": "CLI controller: run pending migrations",
+        "loc": "handler(args) -> connection.buildMigrations() + executor.executePendingMigrations()"
+      },
+      {
+        "file": "packages/typeorm/src/commands/MigrationRevertCommand.ts",
+        "role": "CLI controller: revert last migration",
+        "loc": "handler(args) -> executor.undoLastMigration()"
+      },
+      {
+        "file": "packages/typeorm/src/commands/MigrationShowCommand.ts",
+        "role": "CLI controller: show migration status report",
+        "loc": "handler(args) -> executor.showMigrations()"
+      }
+    ],
+    "reverseEngineeringSources": {
+      "dataFPA": "Migration entity fields + migrationsTableName/migrationsTable options + queryRunner.hasTable/loadExecutedMigrations SQL surface",
+      "transactionsUCP": "Public method signatures of MigrationExecutor (8 public methods) + 3 CLI handler() endpoints",
+      "actorsUCP": "yargs CLI console (human) + DataSource.migrationsRun programmatic bootstrap (CI/CD)"
+    }
+  },
+  "fpaIfpugLedger": {
+    "weights": {
+      "ILF": { "Low": 7, "Medium": 10, "High": 15 },
+      "EIF": { "Low": 5, "Medium": 7, "High": 10 },
+      "EI": { "Low": 3, "Medium": 4, "High": 6 },
+      "EO": { "Low": 4, "Medium": 5, "High": 7 },
+      "EQ": { "Low": 3, "Medium": 4, "High": 6 }
+    },
+    "elements": [
+      { "category": "ILF", "element": "migrations table (id, timestamp, name, transaction)", "evidence": "MigrationExecutor: insertMigration/deleteMigration/loadExecutedMigrations; migrationsTableName option", "complexity": "Low", "weight": 7 },
+      { "category": "EIF", "element": "typeorm_metadata table (SchemaBuilder reference)", "evidence": "executeMigration(): schemaBuilder.createMetadataTableIfNecessary(queryRunner)", "complexity": "Low", "weight": 5 },
+      { "category": "EIF", "element": "User migration class definitions (DataSource.options.migrations)", "evidence": "getMigrations(): reads external migration definitions for reference", "complexity": "Low", "weight": 5 },
+      { "category": "EI", "element": "insertMigration(migration) / insertExecutedMigration()", "evidence": "public insertMigration(migration: Migration): Promise<void>", "complexity": "Low", "weight": 3 },
+      { "category": "EI", "element": "deleteMigration(migration) / deleteExecutedMigration()", "evidence": "public deleteMigration(migration: Migration): Promise<void>", "complexity": "Low", "weight": 3 },
+      { "category": "EO", "element": "executePendingMigrations()", "evidence": "transactional batch: ensure table, diff pending, up() each, insert record; derived outputs", "complexity": "Medium", "weight": 5 },
+      { "category": "EO", "element": "executeMigration(migration)", "evidence": "ensure migrations+metadata tables, beforeMigration/up()/afterMigration, insert record", "complexity": "Low", "weight": 4 },
+      { "category": "EO", "element": "undoLastMigration()", "evidence": "find latest executed, down(), delete record", "complexity": "Low", "weight": 4 },
+      { "category": "EO", "element": "showMigrations()", "evidence": "computed status report (boolean per migration)", "complexity": "Low", "weight": 4 },
+      { "category": "EO", "element": "getPendingMigrations()", "evidence": "derived diff allMigrations vs executedMigrations", "complexity": "Low", "weight": 4 },
+      { "category": "EQ", "element": "getExecutedMigrations()", "evidence": "direct retrieval from migrations table, no transformation", "complexity": "Low", "weight": 3 },
+      { "category": "EQ", "element": "hasTable(migrationsTable) existence query", "evidence": "queryRunner.hasTable(this.migrationsTable)", "complexity": "Low", "weight": 3 }
+    ],
+    "totals": { "ILF": 7, "EIF": 10, "EI": 6, "EO": 21, "EQ": 6, "functionPoints": 50 }
+  },
+  "ucpKarnerMatrix": {
+    "actors": [
+      { "actor": "Developer via CLI console (yargs commands)", "type": "Simple (external API/CLI)", "weight": 1 },
+      { "actor": "CI/CD pipeline / app bootstrap (migrationsRun programmatic)", "type": "Medium (protocol/TCP-DB driver)", "weight": 2 }
+    ],
+    "uaw": 3,
+    "useCases": [
+      { "uc": "UC1: Run pending migrations", "entry": "MigrationRunCommand -> executePendingMigrations()", "transactions": "ensure table, load defs, dedupe, load executed, diff, tx begin, up(), insert record (>7 steps)", "complexity": "Complex", "weight": 15 },
+      { "uc": "UC2: Revert last migration", "entry": "MigrationRevertCommand -> undoLastMigration()", "transactions": "ensure table, load executed, find latest, down(), delete record (4-7)", "complexity": "Medium", "weight": 10 },
+      { "uc": "UC3: Show migration status", "entry": "MigrationShowCommand -> showMigrations()", "transactions": "load executed, load defs, diff, format report (4-7)", "complexity": "Medium", "weight": 10 },
+      { "uc": "UC4: Execute single migration", "entry": "executeMigration(migration)", "transactions": "ensure tables, metadata table, up(), insert record (4-7)", "complexity": "Medium", "weight": 10 },
+      { "uc": "UC5: Query pending/executed plan", "entry": "getPendingMigrations() / getExecutedMigrations()", "transactions": "direct retrieval + simple filter (<=3)", "complexity": "Simple", "weight": 5 }
+    ],
+    "uucw": 50,
+    "uucp": 53,
+    "tcf": 1.0,
+    "ecf": 1.0,
+    "ucp": 53
+  },
+  "calibration": {
+    "gitEvidence": {
+      "commitsMigrationCore": 90,
+      "commitsRuntimeCommands": 38,
+      "commitsTotal": 128,
+      "authorsCore": 37,
+      "historySpan": "2016-12-10 .. 2026-09-18",
+      "command": "git log --oneline -- src/migration packages/typeorm/src/migration (+ MigrationRun/Revert/ShowCommand.ts)",
+      "note": "monorepo restructure 2026-09-18 required dual-path aggregation (old src/ + new packages/typeorm/src/)"
+    },
+    "effortModel": {
+      "heuristic": "1.5 engineer-hours per meaningful OSS commit (industry median: commit = one focused unit of work incl. self-review)",
+      "peopleHours": 192
+    },
+    "productivityFactor": { "formula": "PF = peopleHours / UCP", "pfHoursPerUcp": 3.62 }
+  },
+  "conclusion": "PF = 3.62 h/UCP - суттєво нижчий за індустріальну базу Карнера (20-30 h/UCP): mature OSS автоматизує review/CI, код бібліотеки перевикористовує внутрішники фреймворку, а commit-евристика недообліковує design/communication-час. Перекрестна валідація: FPA (50 FP) vs UCP (53 UCP) - конвергенція 1.06x підтверджує узгодженість двох методик. Для управління CR: новий Medium-UC (10 UCP) на цьому модулі бюджетується як ~36-50 людино-годин ДО написання коду."
+}
