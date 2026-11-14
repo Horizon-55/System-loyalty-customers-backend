@@ -1,0 +1,17 @@
+[FIN-SIM] Software Economics Financial Simulator (Lab 9 / Task 2, Node.js)
+[FIN-SIM] Report JSON : reports/sonarcloud-api/sqale-raw-measures.json
+[FIN-SIM] HOURLY_RATE : $45.00/h | OVERLOAD_COEFF: 1.3 | DISCOUNT_RATE: 0.01
+[FIN-SIM] Parsed SQALE measures: ncloc=75543, sqale_index=12551 min
+[FIN-SIM] Debt volume : 209.18 h (26.15 person-days)
+[FIN-SIM] Principal (Remediation Cost)      : $12,237.23
+[FIN-SIM] Cost of Delay (monthly losses)    : $44,192.66/month
+[FIN-SIM] t=1 | DF=1.0100 | Profit=$43,755.10 | NPV=$31,517.88
+[FIN-SIM] t=2 | DF=1.0201 | Profit=$43,321.89 | NPV=$74,839.76
+[FIN-SIM] t=3 | DF=1.0303 | Profit=$42,892.96 | NPV=$117,732.72
+[FIN-SIM] t=4 | DF=1.0406 | Profit=$42,468.27 | NPV=$160,200.99
+[FIN-SIM] t=5 | DF=1.0510 | Profit=$42,047.79 | NPV=$202,248.79
+[FIN-SIM] t=6 | DF=1.0615 | Profit=$41,631.48 | NPV=$243,880.27
+[FIN-SIM] Payback Period: month 1
+[FIN-SIM] QUALITY GATE VERDICT: PASS
+[FIN-SIM] FINANCIAL_LEDGER.md generated successfully -> K:\Project Api\New Projects\System-loyalty-customers-backend\FINANCIAL_LEDGER.md
+[FIN-SIM] System message: financial quality ledger created, gate PASS
