@@ -1,0 +1,1 @@
+{"component":{"id":"AZzDqOFCse3VCKu3FYbT","key":"typeorm_typeorm","name":"typeorm","qualifier":"TRK","measures":[{"metric":"ncloc","value":"75543"},{"metric":"sqale_index","value":"12551","bestValue":false},{"metric":"sqale_rating","value":"1.0","bestValue":true}]}}

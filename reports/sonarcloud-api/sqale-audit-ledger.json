@@ -1,0 +1,41 @@
+{
+  "audit": "Lab 9 / Task 1 - SQALE Forensic Audit (Mathematical Debt Passport)",
+  "auditor": "Independent IT Quality Auditor (Quality Engineering & Software Maintenance course)",
+  "object": {
+    "projectName": "typeorm",
+    "description": "TypeORM - ORM (Object-Relational Mapping) framework для Node.js/TypeScript: операції з реляційними БД через Entity/Repository патерн",
+    "repository": "https://github.com/typeorm/typeorm",
+    "sonarcloudProjectKey": "typeorm_typeorm",
+    "sonarcloudOrganization": "typeorm",
+    "sonarcloudDashboard": "https://sonarcloud.io/summary/overall?id=typeorm_typeorm",
+    "analysisDate": "2026-11-12T12:19:16+0000",
+    "stack": "TypeScript (matches auditor engineering stack)"
+  },
+  "cloudEvidence": {
+    "endpoint": "https://sonarcloud.io/api/measures/component",
+    "request": "GET https://sonarcloud.io/api/measures/component?component=typeorm_typeorm&metricKeys=sqale_index,ncloc,sqale_rating",
+    "rawResponseFile": "reports/sonarcloud-api/sqale-raw-measures.json",
+    "measures": {
+      "ncloc": 75543,
+      "sqale_index_minutes": 12551,
+      "sqale_rating": "1.0 (A)"
+    }
+  },
+  "sqalePassport": {
+    "debtHours": 209.18,
+    "debtPersonDays": 26.15,
+    "personDaysFormula": "sqale_index / 60 / 8",
+    "rewriteBaselineHours": 37771.5,
+    "rewriteBaselineFormula": "ncloc * 30 min / 60",
+    "tddPercent": 0.5538,
+    "tddFormula": "debtHours / rewriteBaselineHours * 100",
+    "industrialScaleMapping": "TDD <= 5% -> A",
+    "computedRating": "A",
+    "cloudRating": "A (1.0)",
+    "verification": "MATCH - independent calculation confirms cloud sqale_rating"
+  },
+  "verdict": {
+    "status": "PASS",
+    "summary": "Хмарні розрахунки SonarQube Cloud об'єктивні: незалежний розрахунок TDD = 0.55% (<= 5%) відповідає рейтингу A. Технічний борг TypeORM = 26.15 інженерних людино-днів на кодову базу обсягом 75,543 ncloc."
+  }
+}
