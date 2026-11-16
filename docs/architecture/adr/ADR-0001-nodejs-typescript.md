@@ -1,4 +1,14 @@
-# ADR-001: Вибір Node.js + TypeScript + Express як технологічного стеку
+---
+owner: Solution Architect
+status: accepted
+review_date: 2027-05-16
+tags:
+  - architecture
+  - adr
+  - adr-001
+---
+
+# ADR-0001: Вибір Node.js + TypeScript + Express як технологічного стеку
 
 **Статус:** Accepted  
 **Дата:** 2026-09-01  
@@ -35,3 +45,7 @@
 - Відсутність вбудованого IoC-контейнера (DI вручну)
 - Single-threaded обмежує CPU-intensive операції
 - Потребує дисципліни у DDD без фреймворку
+
+---
+
+> Пов'язані артефакти (Obsidian Graph): [[sdd]] | [[isd]] | [[maintenance]]

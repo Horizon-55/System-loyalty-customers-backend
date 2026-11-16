@@ -1,4 +1,14 @@
-# ADR-006: God Object Decomposition — Interface Segregation (SRP + DIP)
+---
+owner: Solution Architect
+status: accepted
+review_date: 2027-05-16
+tags:
+  - architecture
+  - adr
+  - adr-006
+---
+
+# ADR-0006: God Object Decomposition — Interface Segregation (SRP + DIP)
 
 **Статус:** Accepted  
 **Дата:** 2026-11-09  
@@ -42,3 +52,7 @@ CustomerService         → Composite Facade (делегує до 3-х вище)
 ⚠️ Негативні:
 - Збільшилася кількість файлів (3 інтерфейси + 3 сервіси)
 - Backward compatibility вимагала Composite Facade (не Breaking Change)
+
+---
+
+> Пов'язані артефакти (Obsidian Graph): [[sdd]] | [[isd]] | [[maintenance]]

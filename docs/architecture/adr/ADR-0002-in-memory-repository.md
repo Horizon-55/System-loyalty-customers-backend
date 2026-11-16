@@ -1,4 +1,14 @@
-# ADR-002: In-Memory Repository для тестового середовища
+---
+owner: Solution Architect
+status: accepted
+review_date: 2027-05-16
+tags:
+  - architecture
+  - adr
+  - adr-002
+---
+
+# ADR-0002: In-Memory Repository для тестового середовища
 
 **Статус:** Accepted  
 **Дата:** 2026-09-15  
@@ -34,3 +44,7 @@
 ⚠️ Негативні:
 - RPO = 0 тільки для тестів; Production вимагає заміни на persistent storage
 - Не підходить для load testing або multi-instance deployments
+
+---
+
+> Пов'язані артефакти (Obsidian Graph): [[sdd]] | [[isd]] | [[maintenance]]

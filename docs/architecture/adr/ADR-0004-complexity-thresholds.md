@@ -1,4 +1,14 @@
-# ADR-004: Порогові значення складності (CC ≤ 10, Halstead V ≤ 300)
+---
+owner: Dev Lead
+status: accepted
+review_date: 2027-05-16
+tags:
+  - architecture
+  - adr
+  - adr-004
+---
+
+# ADR-0004: Порогові значення складності (CC ≤ 10, Halstead V ≤ 300)
 
 **Статус:** Accepted  
 **Дата:** 2026-10-26  
@@ -38,3 +48,7 @@
 ⚠️ Негативні:
 - Може блокувати легітимні складні алгоритми (потребує `// complexity-exception`)
 - Не охоплює архітектурну складність (потрібні CK metrics — ADR-006)
+
+---
+
+> Пов'язані артефакти (Obsidian Graph): [[sdd]] | [[isd]] | [[maintenance]]

@@ -1,0 +1,73 @@
+site_name: System Loyalty Customers Backend — База Знань
+site_description: Корпоративна інженерна база знань (Documentation as Code)
+site_author: Horizon-55
+repo_url: https://github.com/Horizon-55/System-loyalty-customers-backend
+repo_name: Horizon-55/System-loyalty-customers-backend
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  language: uk
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Перемкнути на темну тему
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Перемкнути на світлу тему
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+
+plugins:
+  - search
+  - mermaid2:
+      arguments:
+        theme: default
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:mermaid2.fence_mermaid
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - attr_list
+  - md_in_html
+
+nav:
+  - Головна (Рівень 1): index.md
+  - Для розробників (Рівень 2):
+    - Регламент CONTRIBUTING: developer/CONTRIBUTING.md
+    - Локальне середовище: developer/environment.md
+    - Стандарти кодування: developer/coding-standards.md
+  - Інтерфейси API (Рівень 3):
+    - Огляд контрактів API: api/index.md
+  - Архітектурний паспорт (Рівень 4):
+    - Системний дизайн (SDD): architecture/sdd.md
+    - Інфраструктура (ISD): architecture/isd.md
+    - Регламент супроводу: architecture/maintenance.md
+    - Handover-пакет: architecture/handover.md
+    - Кущ рішень (ADR):
+        - ADR-0001 Стек Node.js+TypeScript: architecture/adr/ADR-0001-nodejs-typescript.md
+        - ADR-0002 In-Memory Repository: architecture/adr/ADR-0002-in-memory-repository.md
+        - ADR-0003 GQM-матриця якості: architecture/adr/ADR-0003-gqm-quality-matrix.md
+        - ADR-0004 Пороги складності CC та V: architecture/adr/ADR-0004-complexity-thresholds.md
+        - ADR-0005 Аудит Чепіна та Hotspots: architecture/adr/ADR-0005-chapin-semantic-audit.md
+        - ADR-0006 Декомпозиція God Object: architecture/adr/ADR-0006-god-object-decomposition.md
+        - ADR-0007 Композиція замість спадкування: architecture/adr/ADR-0007-composition-over-inheritance.md
+        - ADR-0008 Фінансова модель SQALE: architecture/adr/ADR-0008-sqale-financial-model.md

@@ -1,3 +1,14 @@
+---
+owner: Solution Architect
+status: published
+review_date: 2027-02-16
+tags:
+  - architecture
+  - sdd
+  - c4-model
+  - ddd
+---
+
 # System Design Document (SDD)
 ## System-loyalty-customers-backend
 
@@ -217,11 +228,15 @@ erDiagram
 
 | Рішення | ADR | Статус |
 | :--- | :---: | :---: |
-| Node.js + TypeScript + Express | [ADR-001](./architecture/adr/ADR-001-nodejs-typescript.md) | Accepted |
-| In-Memory Repository для тестів | [ADR-002](./architecture/adr/ADR-002-in-memory-repository.md) | Accepted |
-| GQM-матриця вимірювання якості | [ADR-003](./architecture/adr/ADR-003-gqm-quality-matrix.md) | Accepted |
-| CC ≤ 10, Halstead Complexity Thresholds | [ADR-004](./architecture/adr/ADR-004-complexity-thresholds.md) | Accepted |
-| Chapin Semantic Audit + Hotspots | [ADR-005](./architecture/adr/ADR-005-chapin-semantic-audit.md) | Accepted |
-| God Object → Interface Decomposition | [ADR-006](./architecture/adr/ADR-006-god-object-decomposition.md) | Accepted |
-| Replace Inheritance with Composition | [ADR-007](./architecture/adr/ADR-007-composition-over-inheritance.md) | Accepted |
-| SQALE Financial Model for Tech Debt | [ADR-008](./architecture/adr/ADR-008-sqale-financial-model.md) | Accepted |
+| Node.js + TypeScript + Express | [ADR-0001](./adr/ADR-0001-nodejs-typescript.md) | Accepted |
+| In-Memory Repository для тестів | [ADR-0002](./adr/ADR-0002-in-memory-repository.md) | Accepted |
+| GQM-матриця вимірювання якості | [ADR-0003](./adr/ADR-0003-gqm-quality-matrix.md) | Accepted |
+| CC ≤ 10, Halstead Complexity Thresholds | [ADR-0004](./adr/ADR-0004-complexity-thresholds.md) | Accepted |
+| Chapin Semantic Audit + Hotspots | [ADR-0005](./adr/ADR-0005-chapin-semantic-audit.md) | Accepted |
+| God Object → Interface Decomposition | [ADR-0006](./adr/ADR-0006-god-object-decomposition.md) | Accepted |
+| Replace Inheritance with Composition | [ADR-0007](./adr/ADR-0007-composition-over-inheritance.md) | Accepted |
+| SQALE Financial Model for Tech Debt | [ADR-0008](./adr/ADR-0008-sqale-financial-model.md) | Accepted |
+
+---
+
+> Пов'язані документи (Obsidian Graph): [[isd]] | [[maintenance]] | [[handover]] | [[ADR-0001-nodejs-typescript]]

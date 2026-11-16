@@ -110,15 +110,25 @@ npm run hotspots:audit
 | DIT (NotificationService) | 1 | ≤ 2 | ✅ |
 | SQALE Rating | A (0.55%) | ≤ 5% | ✅ |
 
-## 📚 Документація
+## 📚 Чотирирівнева піраміда документації (Documentation as Code)
 
-| Документ | Опис |
-|---|---|
-| [docs/sdd.md](docs/sdd.md) | System Design Document (C4 diagrams, ER, API spec) |
-| [docs/isd.md](docs/isd.md) | Infrastructure Specification (topology, CI/CD, RTO/RPO) |
-| [docs/maintenance.md](docs/maintenance.md) | Documentation Maintenance Regime |
-| [docs/architecture/adr/](docs/architecture/adr/) | Architecture Decision Records (8 ADRs) |
-| [reports/](reports/) | Quality audit reports (Labs 5–10) |
+Система використовує стандарт **Documentation as Code (DaC)** на базі **MkDocs Material** та **Obsidian Knowledge Graph**:
+
+| Рівень піраміди | Розділ у репозиторії | Цільова аудиторія та призначення |
+| :---: | :--- | :--- |
+| **Рівень 1** | [README.md](README.md) | **«Що це і як запустити?»** — призначення, стек, швидкий старт за 5 хвилин. |
+| **Рівень 2** | [docs/developer/](docs/developer/CONTRIBUTING.md) | **«Як долучитися?»** — регламент CONTRIBUTING, оточення, стандарти кодування. |
+| **Рівень 3** | [docs/api/](docs/api/index.md) | **«Як інтегруватися?»** — машинно-читний контракт OpenAPI 3.x, Swagger UI, SDK. |
+| **Рівень 4** | [docs/architecture/](docs/architecture/sdd.md) | **«Чому система влаштована так?»** — SDD (C4 L1-L3), ISD, 8 ADR, Handover. |
+
+### Документаційний Definition of Done (DoD)
+
+| Контур валідації | Інструмент перевірки | Поріг якості | Реакція при збої |
+| :--- | :--- | :---: | :--- |
+| **Контракти API** | Spectral CLI | **0 errors** | Блокування злиття PR |
+| **Синтаксис розмітки** | Markdownlint | **0 errors** | Блокування збірки сайту |
+| **Цілісність посилань** | `mkdocs build --strict` | **Exit Code 0** | Зупинка деплою GitHub Pages |
+| **Актуальність знань** | `review_date` з front matter | $\le 90$ / $180$ днів | Статус `deprecated` |
 
 ## 🔀 Git History (Key Commits)
 

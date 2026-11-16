@@ -1,4 +1,14 @@
-# ADR-008: SQALE Financial Model для оцінки технічного боргу
+---
+owner: QA Lead
+status: accepted
+review_date: 2027-05-16
+tags:
+  - architecture
+  - adr
+  - adr-008
+---
+
+# ADR-0008: SQALE Financial Model для оцінки технічного боргу
 
 **Статус:** Accepted  
 **Дата:** 2026-11-14  
@@ -43,3 +53,7 @@ sqale_rating = 1.0 (Grade A, TDD = 0.55%)
 ⚠️ Негативні:
 - Goodhart's Law: компанії можуть "маніпулювати" метриками SonarQube
 - Cost of Delay — апроксимація (1 год/100 рядків), не точне вимірювання
+
+---
+
+> Пов'язані артефакти (Obsidian Graph): [[sdd]] | [[isd]] | [[maintenance]]

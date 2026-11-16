@@ -1,4 +1,14 @@
-# ADR-005: Chapin Semantic Data Complexity Audit + Hotspots Matrix
+---
+owner: QA Lead
+status: accepted
+review_date: 2027-05-16
+tags:
+  - architecture
+  - adr
+  - adr-005
+---
+
+# ADR-0005: Chapin Semantic Data Complexity Audit + Hotspots Matrix
 
 **Статус:** Accepted  
 **Дата:** 2026-11-09  
@@ -41,3 +51,7 @@
 ⚠️ Негативні:
 - Code Churn вимагає повну git-історію (`fetch-depth: 0` у CI)
 - Chapin Q суб'єктивна: категоризація змінних залежить від аналітика
+
+---
+
+> Пов'язані артефакти (Obsidian Graph): [[sdd]] | [[isd]] | [[maintenance]]

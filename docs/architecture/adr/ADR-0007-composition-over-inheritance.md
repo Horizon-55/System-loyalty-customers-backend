@@ -1,4 +1,14 @@
-# ADR-007: Replace Inheritance with Composition (DIT=1 target)
+---
+owner: Solution Architect
+status: accepted
+review_date: 2027-05-16
+tags:
+  - architecture
+  - adr
+  - adr-007
+---
+
+# ADR-0007: Replace Inheritance with Composition (DIT=1 target)
 
 **Статус:** Accepted  
 **Дата:** 2026-11-09  
@@ -54,3 +64,7 @@ class PremiumLoyaltyEmailNotificationService {
 ⚠️ Негативні:
 - Вимагає явного делегування кожного методу (verbose-код)
 - Більше класів у системі (але менша зв'язність)
+
+---
+
+> Пов'язані артефакти (Obsidian Graph): [[sdd]] | [[isd]] | [[maintenance]]
