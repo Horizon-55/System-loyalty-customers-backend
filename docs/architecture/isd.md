@@ -1,35 +1,27 @@
 ---
-owner: DevOps Engineer
+title: "Infrastructure Specification Document (ISD)"
 status: published
+date: 2026-11-16
 review_date: 2027-02-16
+owner: "DevOps Engineer / SRE Team"
 tags:
   - infrastructure
   - isd
   - devops
   - rto-rpo
   - ci-cd
----
-
----
-owner: Horizon-55
-status: published
-review_date: 2027-02-16
-tags:
-  - infrastructure
-  - isd
-  - devops
-  - rto-rpo
-  - ci-cd
+  - backup-policy
+  - restore-drill
 ---
 
 # Infrastructure Specification Document (ISD)
 ## System-loyalty-customers-backend
 
-> **Версія:** 1.0.0  
+> **Версія:** 1.1.0  
 > **Дата:** 2026-11-16  
-> **Статус:** Active  
-> **Розробник:** Horizon-55  
-> **Останнє оновлення:** Лабораторна робота №10 — Documentation Engineering  
+> **Статус:** Active / Production-Ready  
+> **Власник:** DevOps Engineer / SRE Team  
+> **Останнє оновлення:** Лабораторна робота №12 — SRE Runbooks, SLO/SLA та Backup Policy  
 
 ---
 
@@ -52,11 +44,13 @@ flowchart TD
     end
 
     subgraph Messaging["📨 Message Broker"]
-        RMQ["RabbitMQ\n:5672 (AMQP)\n:15672 (Management UI)\n---\nQueue: customer.events\nQueue: point.events"]
+        RMQ["RabbitMQ\n:5672 (AMQP)\n:15672 (Management UI)\n---\nQueue: customer.events\nQueue: point.events\nQueue: loyalty.points.dlq"]
     end
 
-    subgraph Storage["🗃️ Data Storage Layer"]
-        MDB["MongoDB (MongoMemoryServer)\nIn-Process / Test\n---\nCollection: customers\nCollection: consents"]
+    subgraph Storage["🗃️ Data & Cache Layer"]
+        MDB["MongoDB / MongoMemoryServer\nReplicaSet / WAL Logs\n---\nCollection: customers\nCollection: points_ledger"]
+        
+        REDIS["Redis :6379\nDistributed Lock (Redlock)\nIdempotency & Token Bucket"]
         
         CONSUL["Consul\nService Registry\n---\nHealth Checks\nService Discovery"]
     end
@@ -69,6 +63,8 @@ flowchart TD
     PS -->|"AMQP Subscribe"| RMQ
     RMQ -->|"AMQP Subscribe"| CS
     CS -->|"Read / Write"| MDB
+    CS -->|"Distributed Lock"| REDIS
+    PS -->|"Distributed Lock"| REDIS
     CS -->|"Register"| CONSUL
     PS -->|"Register"| CONSUL
 ```
@@ -79,107 +75,177 @@ flowchart TD
 
 | Параметр | Development | Test (CI) | Production (Target) |
 | :--- | :---: | :---: | :---: |
-| **Platform** | Windows / macOS local | GitHub Actions (ubuntu-latest) | Cloud VPS / Docker |
-| **Node.js** | v24.x | v20 LTS | v20 LTS |
-| **Database** | MongoMemoryServer | MongoMemoryServer | MongoDB Atlas / Standalone |
-| **RabbitMQ** | Local Docker | — (mocked) | CloudAMQP |
-| **API Gateway** | localhost:3000 | — | Nginx / Cloudflare |
-| **Customer Service** | localhost:3001 | localhost:3001 | container:3001 |
-| **Point Service** | localhost:3002 | — | container:3002 |
-| **Secret Management** | .env (gitignored) | GitHub Secrets | Vault / Env Vars |
-| **Monitoring** | Console logs | GitHub Actions logs | Prometheus + Grafana |
+| **Platform** | Windows / macOS local | GitHub Actions (ubuntu-latest) | Cloud VPS / Kubernetes (EKS/GKE) |
+| **Node.js** | v24.x | v20 LTS | v20 LTS (Alpine Container) |
+| **Database** | MongoMemoryServer | MongoMemoryServer | MongoDB ReplicaSet (3 nodes) |
+| **Cache / Lock** | Redis 7.x (local) | Redis (mock/container) | Redis Cluster (HA Sentinel) |
+| **RabbitMQ** | Local Docker | — (mocked) | CloudAMQP High-Availability |
+| **API Gateway** | localhost:3000 | — | Nginx Ingress / Cloudflare SSL |
+| **Customer Service** | localhost:3001 | localhost:3001 | container:3001 (Replica count >= 2) |
+| **Point Service** | localhost:3002 | — | container:3002 (Replica count >= 2) |
+| **Secret Management** | `.env` (gitignored) | GitHub Secrets | HashiCorp Vault / AWS Secrets Manager |
+| **Monitoring** | Console logs | GitHub Actions logs | Prometheus + Grafana + Alertmanager |
 
 ---
 
 ## 3. CI/CD Пайплайн (GitHub Actions)
 
-```mermaid
-flowchart LR
-    subgraph Trigger["⚡ Trigger"]
-        PUSH["git push → main\nor Pull Request"]
-    end
+Система використовує паралельні та взаємодоповнюючі конвеєри безперервної інтеграції:
+1. **`.github/workflows/docs.yml`**: Перевірка контрактів Spectral, аудит дат актуальності документації та збірка MkDocs у режимі `--strict`.
+2. **`.github/workflows/complexity-hotspots.yml`**: Семантичний аудит складності даних Чепіна, мутаційні тести, Halstead/McCabe Quality Gate.
 
-    subgraph Pipeline["🔄 GitHub Actions Pipeline\n.github/workflows/complexity-hotspots.yml"]
-        S1["Step 1\nCheckout\n(fetch-depth: 0\nfull git history)"]
-        S2["Step 2\nSetup Node.js v20\n+ npm cache"]
-        S3["Step 3\nInstall Dependencies\nnpm install\n(monorepo + services)"]
-        S4["Step 4\n🔬 Chapin Semantic\nData Complexity Audit\nnpm run chapin:audit"]
-        S5["Step 5\n🧬 Mutation Immunity\nUnit Tests\nnpm run test:mutation"]
-        S6["Step 6\n📊 Halstead & McCabe\nBaseline Telemetry\nnpm run complexity:baseline"]
-        S7["Step 7\n🗺️ Hotspots Risk Matrix\nJSON Export\nnpm run hotspots:audit"]
-        S8["Step 8\n📤 Upload Artifacts\nreports/hotspots-matrix.json\nretention: 30 days"]
-    end
+---
 
-    subgraph Gates["✅ Quality Gates"]
-        QG1["CC ≤ 10\n(Cyclomatic Complexity)"]
-        QG2["Halstead V ≤ 300\nper function"]
-        QG3["Chapin Q ≤ 20\nper module"]
-        QG4["All tests PASS\n(no mutations survive)"]
-    end
+## 4. Експлуатаційні процедури (Operations & Reliability Engineering)
 
-    PUSH --> S1 --> S2 --> S3 --> S4 --> S5 --> S6 --> S7 --> S8
-    S4 -.->|"enforces"| QG3
-    S5 -.->|"enforces"| QG4
-    S6 -.->|"enforces"| QG1
-    S6 -.->|"enforces"| QG2
+### 4.1. Процедура штатного розгортання релізу
+Розгортання здійснюється за схемою **Blue-Green** або **Rolling Update** для забезпечення нульового простою (Zero Downtime):
+
+```bash
+# 1. Завантаження оновлених образів або коду
+git fetch origin main && git checkout tags/docs-v1.0
+
+# 2. Встановлення виробничих залежностей
+npm ci --legacy-peer-deps --omit=dev
+
+# 3. Компіляція TypeScript артефактів
+npm run build --prefix customer-service
+
+# 4. Запуск сервісів у фоновому режимі (або docker compose up -d)
+docker compose up -d --build customer-service point-service
+
+# 5. Верифікація Health Check (Smoke Testing)
+curl -f -s http://localhost:3000/health | jq .
+# Критерій: "status": "UP" по всіх підсистемах (db, redis, rabbitmq)
 ```
 
-### CI/CD History (Останні запуски):
+### 4.2. Порядок оновлення з міграціями даних
+Усі міграції бази даних підлягають версійному контролю та описані у журналі змін `CHANGELOG.md` за стандартом SemVer.
+- **Правило сумісності (Expand-Contract Pattern):**
+  1. *Фаза Expand (Попередня сумісність):* Додаються нові поля та індекси без видалення старих. Новий реліз розгортається паралельно зі старим.
+  2. *Фаза Data Backfill:* Асинхронний скрипт заповнює нові поля історичними даними.
+  3. *Фаза Contract:* Після перемикання 100% трафіку на нову версію, окремим релізом видаляються застарілі атрибути схеми.
+- **Команди виконання міграції:**
+  ```bash
+  # Виконання міграції вперед
+  npm run db:migrate --prefix customer-service
+  
+  # Екстрений відкат міграції (Rollback)
+  npm run db:migrate:undo --prefix customer-service
+  ```
 
-| Run ID | SHA | Статус | Опис |
+### 4.3. Процедура відновлення після аварії (Disaster Recovery Order)
+Під час холодного старту або повного збою інфраструктури підняття сервісів виконується **суворо за графом залежностей**:
+
+```
+[1. Базові сховища]        PostgreSQL / MongoDB  ──►  Redis Cluster
+                                     │                     │
+                                     ▼                     ▼
+[2. Асинхронна шина]                 RabbitMQ Message Broker
+                                                │
+                                                ▼
+[3. Доменні сервіси]         point-service   &   customer-service
+                                                │
+                                                ▼
+[4. Точка входу]                           api-gateway
+```
+
+**Консольний регламент відновлення:**
+```bash
+# Крок 1: Запуск бази даних та перевірка коннекту
+docker compose start mongodb redis
+until docker compose exec redis redis-cli ping | grep -q PONG; do sleep 2; done
+
+# Крок 2: Запуск брокера повідомлень
+docker compose start rabbitmq
+until docker compose exec rabbitmq rabbitmqctl status | grep -q "Running"; do sleep 3; done
+
+# Крок 3: Запуск доменних мікросервісів
+docker compose start point-service customer-service
+sleep 5
+
+# Крок 4: Запуск API Gateway
+docker compose start api-gateway
+
+# Крок 5: Повний аудит готовності
+curl -f http://localhost:3000/health
+```
+
+---
+
+## 5. Reliability Engineering: Розрахунок RTO та RPO
+
+| Параметр | Інженерне визначення | Цільовий норматив | Розрахункове обґрунтування |
 | :--- | :--- | :---: | :--- |
-| 42601129359 | `1a97519` | ✅ SUCCESS | refactor(audit): replace inheritance with composition pattern, PASS |
-| 42596945985 | `a0ab991` | ✅ SUCCESS | fix(ci): resolve npm install path for customer-service |
-| 42589818685 | `c1072a0` | ❌ FAILURE | ci(hotspots): implement cloud complexity scanner (bootstrap failure) |
+| **RTO** (Recovery Time Objective) | Максимально допустимий час простою системи до повного відновлення | **< 15 хвилин** | 5 хв — виявлення алертом + 5 хв — авто-рестарт контейнерів або промоушн репліки + 5 хв — верифікація |
+| **RPO** (Recovery Point Objective) | Максимально допустимий обсяг втрати транзакційних даних у часі | **< 5 хвилин** | Забезпечується безперервною реплікацією WAL-логів (Write-Ahead Logging) кожні 5 хв на віддалене сховище |
+| **Uptime SLO** | Внутрішня ціль доступності за 30-денним вікном | **≥ 99.5%** | Допустимий ліміт простою (Error Budget) = **216 хвилин на місяць** |
+| **Uptime SLA** | Зовнішній договірний рівень доступності | **≥ 99.0%** | Допустимий ліміт простою до сплати неустойки = **432 хвилини на місяць** |
+| **Буфер надійності** | Запас часу між інженерним SLO та бізнес SLA | **0.5% (216 хв)** | Забезпечує вирішення інцидентів до порушення юридичних зобов'язань |
 
 ---
 
-## 4. Reliability Engineering: RTO та RPO
+## 6. Політика резервного копіювання (Backup Policy 3-2-1)
 
-| Параметр | Визначення | Цільове значення | Поточний стан |
-| :--- | :--- | :---: | :---: |
-| **RTO** (Recovery Time Objective) | Максимально допустимий час відновлення після збою | **< 15 хвилин** | ⚠️ Manual (no auto-restart) |
-| **RPO** (Recovery Point Objective) | Максимально допустима втрата даних | **0 хвилин** | ✅ In-memory (no persistence loss) |
-| **Uptime SLA** | Цільова доступність | **99.5%** | ⚠️ Single instance |
-| **MTTR** (Mean Time to Repair) | Середній час відновлення | **< 10 хвилин** | ⚠️ Manual deployment |
-| **MTBF** (Mean Time Between Failures) | Середній час між відмовами | **> 720 годин** | ✅ Stable (Fault Injection tested) |
+Для забезпечення фінансової та юридичної цілісності даних клієнтів впроваджено міжнародний стандарт **3-2-1**:
 
-> **Примітка щодо MongoMemoryServer:** Поточна архітектура використовує in-process database (тестове середовище). Для production обов'язковий перехід на persistent MongoDB з реплікасет для RPO = 0.
+```mermaid
+flowchart TD
+    PROD["Live Production Database\n(SSD NVMe Primary)"]
+    
+    subgraph Rule321["Правило резервного копіювання 3-2-1"]
+        C1["Копія 1: Live Primary Node\n(Швидкий доступ, NVMe)"]
+        C2["Копія 2: Local Daily Snapshot\n(Окремий NAS/SAN масив у ДЦ)"]
+        C3["Копія 3: Off-site Cloud Cold Storage\n(AWS S3 Glacier, інший регіон eu-central-1)"]
+    end
+    
+    PROD -->|"Streaming WAL"| C1
+    PROD -->|"Daily pg_dump/mongodump"| C2
+    C2 -->|"Encrypted Sync (AES-256)"| C3
+```
+
+1. **3 копії даних:** 1 основна виробнича + 1 локальна резервна + 1 географічно ізольована хмарна копія.
+2. **2 різні носії:** Високошвидкісні масиви SSD (Primary/Replica) та незалежне блочне/об'єктне сховище (S3/Glacier).
+3. **1 копія поза майданчиком (Off-site):** Хмарний регіон, фізично віддалений від основного дата-центру на > 500 км для захисту від техногенних катастроф.
+
+### 6.1. Розклад та глибина зберігання (Retention Schedule)
+- **Повні копії (Full Backup):** Щотижня у неділю о 02:00 UTC (зберігаються 90 днів).
+- **Диференційні / Інкрементні копії (Incremental):** Щодня о 03:00 UTC (зберігаються 30 днів).
+- **Журнали транзакцій (WAL / Oplog streaming):** Кожні 5 хвилин для забезпечення RPO < 5 хв (зберігаються 7 днів).
+- **Шифрування:** Усі резервні архіви шифруються за алгоритмом **AES-256-GCM** з використанням ключів AWS KMS або Vault.
+
+### 6.2. Регламент процедури тестового відновлення (Restore Drill)
+За канонічним правилом Лекції 10:  
+> **«Резервна копія, відновлення з якої ніколи не перевірялося, резервною копією не вважається!»**
+
+- **Періодичність:** Кожен перший вівторок місяця о 10:00 UTC.
+- **Середовище:** Ізольоване Staging-середовище (Sandbox без доступу до Production).
+- **Покроковий регламент Restore Drill:**
+  1. Автоматичне завантаження останнього повного бекапу з AWS S3.
+  2. Перевірка контрольної суми архіву: `sha256sum -c backup_checksum.sha256`.
+  3. Розгортання бази даних у тестовий інстанс:
+     ```bash
+     mongorestore --drop --gzip --archive=/tmp/backup_monthly.gz
+     ```
+  4. Запуск скрипта цілісності даних (Data Integrity Smoke Test):
+     - Перевірка відповідності суми балансів клієнтів та проводок у журналі аудиту (`points_ledger`).
+     - Перевірка цілісності індексів та унікальності ідентифікаторів.
+  5. Фіксація результатів у журналі аудиту відновлення (`reports/restore-drill-log.md`). Критерій успіху: відновлення триває **менше 10 хвилин** (RTO), розбіжність балансів = **0.00 UAH**.
 
 ---
 
-## 5. Security Architecture
+## 7. Security Architecture & Controls
 
-| Шар | Механізм | Статус |
+| Шар | Механізм захисту | Статус |
 | :--- | :--- | :---: |
-| Secrets Management | `.env` (gitignored) + `.env.example` | ✅ |
-| Secret Scanning | Gitleaks pre-commit hook | ✅ |
-| PII Data Masking | `PiiSanitizer` (email/phone в логах) | ✅ |
-| Input Validation | `validation.middleware.ts` | ✅ |
-| Error Sanitization | `errorHandler.middleware.ts` (не розкриває стек) | ✅ |
-| Fault Injection | `faultInjection.middleware.ts` (Chaos Engineering) | ✅ |
-| GDPR Compliance | Consent Management + Anonymization | ✅ |
-| HTTPS | — (передбачений через Nginx/proxy) | ⚠️ |
+| Secrets Management | `.env` (gitignored) + GitHub Secrets | ✅ |
+| Secret Scanning | Gitleaks pre-commit hook (блокує витік токенів) | ✅ |
+| PII Data Masking | `PiiSanitizer` (маскування телефонів/email у логах) | ✅ |
+| Input Validation | `validation.middleware.ts` (валідація DTO за OpenAPI) | ✅ |
+| Error Sanitization | `errorHandler.middleware.ts` (приховує стек-трейси у production) | ✅ |
+| Rate Limiting | Token Bucket на рівні API Gateway (захист від DDoS) | ✅ |
+| GDPR Compliance | Crypto-shredding та стирання даних за запитом (ADR-0007) | ✅ |
 
 ---
 
-## 6. Deployment Checklist (Dev → Production)
-
-```
-[ ] 1. Замінити MongoMemoryServer на MongoDB Atlas (persistent storage)
-[ ] 2. Налаштувати реальний RabbitMQ (CloudAMQP або self-hosted)
-[ ] 3. Перейти на HTTPS (Nginx reverse proxy + Let's Encrypt)
-[ ] 4. Налаштувати Prometheus + Grafana для моніторингу
-[ ] 5. Увімкнути auto-restart (PM2 / Docker healthcheck)
-[ ] 6. Налаштувати backup MongoDB (RPO = 0)
-[ ] 7. Встановити CDN + Rate Limiting на API Gateway
-[ ] 8. Секрети перенести в Vault / GitHub Secrets (не .env)
-```
-
----
-
-> Пов'язані документи (Obsidian Graph): [[sdd]] | [[maintenance]] | [[handover]] | [[environment]] | [[ADR-0002-in-memory-repository]]
-
----
-
-> Пов'язані документи (Obsidian Graph): [[sdd]] | [[maintenance]] | [[handover]] | [[environment]] | [[ADR-0002-in-memory-repository]]
+> Пов'язані документи (Obsidian Graph): [[sdd]] | [[maintenance]] | [[handover]] | [[RB-001]] | [[slo]] | [[ADR-0001-nodejs-typescript]]

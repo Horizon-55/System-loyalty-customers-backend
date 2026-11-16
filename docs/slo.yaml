@@ -1,0 +1,100 @@
+---
+apiVersion: sre.monitoring/v1alpha1
+kind: ServiceLevelContract
+metadata:
+  name: system-loyalty-customers-slo
+  system: System-loyalty-customers-backend
+  owner: "Horizon-55"
+  version: 1.0.0
+  last_updated: "2026-11-16"
+  review_date: "2027-02-16"
+
+spec:
+  calendar_window: "30d"
+  total_minutes_per_window: 43200
+
+  # ─── Service Level Indicators (SLI) & Objectives (SLO) ──────────────────────
+  indicators:
+    - id: SLI-01-AVAILABILITY
+      name: "API HTTP Request Success Rate"
+      description: "Частка успішних HTTP-відповідей (2xx/3xx) відносно всіх запитів (2xx+3xx+5xx), за винятком клієнтських помилок 4xx"
+      measurement:
+        metric: "sum(rate(http_requests_total{status=~'[23]..'}[30d])) / sum(rate(http_requests_total{status=~'[235]..'}[30d]))"
+        source: "Prometheus"
+        scrape_interval: "15s"
+      targets:
+        slo_internal: 99.50 # Внутрішня інженерна ціль (%)
+        sla_external: 99.00 # Зовнішній комерційний договір з бізнесом (%)
+        reliability_buffer: 0.50 # Буфер надійності для команди (%)
+      error_budget:
+        monthly_minutes_allowable: 216.0 # (100 - 99.5) * 43200 / 100
+        burn_rate_alerts:
+          - severity: "SEV-1"
+            window: "1h"
+            burn_rate: 14.4 # Спалювання 2% бюджету за 1 годину
+          - severity: "SEV-2"
+            window: "6h"
+            burn_rate: 6.0  # Спалювання 5% бюджету за 6 годин
+
+    - id: SLI-02-LATENCY-P95
+      name: "Core Customer Endpoints Response Latency (p95)"
+      description: "Частка запитів до /api/v1/customers та /balance, що обробляються швидше ніж за 200 мілісекунд (p95 < 200ms)"
+      measurement:
+        metric: "sum(rate(http_request_duration_seconds_bucket{le='0.2',endpoint=~'/api/v1/customers.*'}[30d])) / sum(rate(http_request_duration_seconds_count{endpoint=~'/api/v1/customers.*'}[30d]))"
+        source: "Prometheus"
+        scrape_interval: "15s"
+      targets:
+        slo_internal: 99.00 # 99% запитів повинні бути швидшими за 200ms
+        sla_external: 95.00 # Зовнішня гарантія бізнесу (95% запитів < 200ms)
+        reliability_buffer: 4.00 # Буфер команди (4%)
+      error_budget:
+        monthly_minutes_allowable: 432.0 # (100 - 99.0) * 43200 / 100
+        burn_rate_alerts:
+          - severity: "SEV-2"
+            window: "2h"
+            burn_rate: 7.2
+
+    - id: SLI-03-ASYNC-TRANSACTIONS
+      name: "Points Accrual Event Processing Reliability"
+      description: "Частка транзакцій нарахування балів, успішно збережених у журнал Event Sourcing без збоїв та попадання у Dead Letter Queue"
+      measurement:
+        metric: "(sum(rate(points_transactions_settled_total[30d])) - sum(rate(points_transactions_dlq_total[30d]))) / sum(rate(points_transactions_settled_total[30d]))"
+        source: "RabbitMQ & Point-Service Metrics"
+        scrape_interval: "30s"
+      targets:
+        slo_internal: 99.90 # 99.9% подій мають бути успішно обробленими
+        sla_external: 99.50 # Зовнішній SLA для партнерів програми лояльності
+        reliability_buffer: 0.40 # Буфер надійності (0.4%)
+      error_budget:
+        monthly_minutes_allowable: 43.2 # (100 - 99.9) * 43200 / 100
+        burn_rate_alerts:
+          - severity: "SEV-1"
+            window: "30m"
+            burn_rate: 28.8
+
+  # ─── Error Budget Policy (Політика управління бюджетом помилок) ──────────────
+  error_budget_policy:
+    zones:
+      - name: "Green Zone"
+        remaining_budget_percent: "> 50%"
+        action: "Normal Development Velocity"
+        rules:
+          - "Дозволено планове розгортання релізів за стандартним графіком."
+          - "Дозволено запуск експериментальних бізнес-фіч та A/B тестів."
+
+      - name: "Yellow Zone"
+        remaining_budget_percent: "20% - 50%"
+        action: "Heightened Review & Risk Mitigation"
+        rules:
+          - "Заборонено розгортання релізів у п'ятницю та передвихідні дні."
+          - "Обов'язкове додаткове тестування на Staging середовищі з навантаженням k6."
+          - "SRE команда проводить позаплановий аудит залишку бюджету раз на 3 дні."
+
+      - name: "Red Zone"
+        remaining_budget_percent: "< 20% or 0%"
+        action: "CHANGE FREEZE (Заморозка змін)"
+        rules:
+          - "Негайне введення мораторію (Change Freeze) на розгортання будь-яких бізнес-фіч."
+          - "100% інженерного часу фокусується виключно на надійності, усуненні технічного боргу та виправленні дефектів."
+          - "Дозволено лише екстрені виправлення безпеки (Emergency Hotfix) за погодженням CCB."
+          - "Розморозка релізів можлива лише після повернення показників SLI у межі SLO."
