@@ -57,11 +57,11 @@ npx tsx --test customer-service/src/tests/privacy.test.ts
 
 | Пріоритет | Файл | Навіщо читати |
 | :---: | :--- | :--- |
-| **1️⃣** | [`docs/sdd.md`](docs/sdd.md) | Загальне розуміння архітектури (C4-діаграми, доменна модель, API) |
-| **2️⃣** | [`docs/isd.md`](docs/isd.md) | Як система розгортається, CI/CD, RTO/RPO, мережева топологія |
-| **3️⃣** | [`README.md`](README.md) | Quickstart, tech stack, метрики якості |
-| **4️⃣** | [`docs/architecture/adr/`](docs/architecture/adr/) | Чому система спроектована саме так (8 ключових рішень) |
-| **5️⃣** | [`customer-service/src/app.ts`](customer-service/src/app.ts) | Точка входу: як все з'єднується (bootstrap sequence) |
+| **1️⃣** | [`docs/architecture/sdd.md`](sdd.md) | Загальне розуміння архітектури (C4-діаграми, доменна модель, API) |
+| **2️⃣** | [`docs/architecture/isd.md`](isd.md) | Як система розгортається, CI/CD, RTO/RPO, мережева топологія |
+| **3️⃣** | [`README.md (Головна)`](../index.md) | Quickstart, tech stack, чотирирівнева піраміда |
+| **4️⃣** | [`docs/architecture/adr/`](adr/ADR-0001-nodejs-typescript.md) | Чому система спроектована саме так (8 ключових рішень) |
+| **5️⃣** | `customer-service/src/app.ts` | Точка входу: як все з'єднується (bootstrap sequence) |
 
 ---
 

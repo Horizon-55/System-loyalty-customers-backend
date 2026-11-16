@@ -40,7 +40,7 @@ graph TD
 
 | Рівень | Розділ | Посилання | Опис |
 | :---: | :--- | :--- | :--- |
-| **1** | **Головна (Швидкий старт)** | [README.md](../../README.md) | Призначення системи, стек технологій, швидкий запуск за 5 кроків. |
+| **1** | **Головна (Швидкий старт)** | [Огляд системи (README)](index.md) | Призначення системи, стек технологій, швидкий запуск за 5 кроків. |
 | **2** | **Для розробників** | [Керівництво контриб'ютора](developer/CONTRIBUTING.md)<br/>[Локальне середовище](developer/environment.md)<br/>[Стандарти коду](developer/coding-standards.md) | Регламент розробки, `docs-or-don't-merge`, вимоги до середовища (Node.js 20+, Docker). |
 | **3** | **API та Контракти** | [Специфікація API](api/index.md) | Машинно-читний контракт OpenAPI 3.x, інтерактивний Swagger UI, клієнтські SDK. |
 | **4** | **Архітектурний паспорт** | [Системний дизайн (SDD)](architecture/sdd.md)<br/>[Інфраструктура (ISD)](architecture/isd.md)<br/>[Кущ рішень (ADR)](architecture/adr/ADR-0001-nodejs-typescript.md)<br/>[Регламент супроводу](architecture/maintenance.md)<br/>[Handover-пакет](architecture/handover.md) | C4-модель (L1–L3), ER-діаграма, мережева топологія, RTO/RPO, незмінні записи рішень. |
