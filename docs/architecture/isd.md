@@ -1,4 +1,16 @@
 ---
+owner: DevOps Engineer
+status: published
+review_date: 2027-02-16
+tags:
+  - infrastructure
+  - isd
+  - devops
+  - rto-rpo
+  - ci-cd
+---
+
+---
 owner: Horizon-55
 status: published
 review_date: 2027-02-16
@@ -163,6 +175,10 @@ flowchart LR
 [ ] 7. Встановити CDN + Rate Limiting на API Gateway
 [ ] 8. Секрети перенести в Vault / GitHub Secrets (не .env)
 ```
+
+---
+
+> Пов'язані документи (Obsidian Graph): [[sdd]] | [[maintenance]] | [[handover]] | [[environment]] | [[ADR-0002-in-memory-repository]]
 
 ---
 

@@ -1,0 +1,17 @@
+extends: ["spectral:oas"]
+
+rules:
+  # Кожна операція повинна мати обов'язковий детальний опис
+  operation-description: error
+  
+  # Кожна операція повинна мати обов'язковий тег для групування в Swagger UI
+  operation-tags: error
+  
+  # Кожна операція повинна мати унікальний operationId для генерації клієнтського SDK
+  operation-operationId: error
+  
+  # Контактна інформація в розділі info обов'язкова
+  info-contact: error
+  
+  # Опис у розділі info обов'язковий
+  info-description: error

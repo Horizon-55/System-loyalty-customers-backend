@@ -1,4 +1,15 @@
 ---
+owner: Solution Architect
+status: published
+review_date: 2027-02-16
+tags:
+  - architecture
+  - maintenance
+  - governance
+  - lifecycle
+---
+
+---
 owner: Horizon-55
 status: published
 review_date: 2027-02-16

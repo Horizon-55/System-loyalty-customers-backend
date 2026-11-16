@@ -1,0 +1,502 @@
+openapi: 3.0.3
+info:
+  title: System Loyalty Customers Backend API
+  description: |
+    Офіційний машинно-читний контракт програмного інтерфейсу системи управління лояльністю клієнтів.
+    Розроблено за стандартом OpenAPI 3.0.3 відповідно до принципів API-First та Single Source of Truth (SSOT).
+    Підтримує управління профілем клієнта, інженерію приватності (GDPR Articles 7, 15, 17) та керування відмовостійкістю (Chaos Engineering).
+  version: 1.0.0
+  contact:
+    name: Solution Architecture & API Governance Team
+    email: api-architect@example.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3001
+    description: Локальне тестове середовище розробки (Customer Service Modular Monolith)
+  - url: https://api.loyalty.example.com
+    description: Production Gateway (Target Environment)
+
+tags:
+  - name: Customers
+    description: Реєстрація клієнтів, отримання профілів та керування рівнями лояльності
+  - name: Privacy Engineering
+    description: Реалізація вимог GDPR — експорт персональних даних (Art. 15) та право на забуття (Art. 17)
+  - name: Consent Management
+    description: Керування інформованими згодами суб'єктів на обробку персональних даних (GDPR Art. 7)
+  - name: Fault Injection
+    description: Інструментарій Chaos Engineering для перевірки стійкості сервісу в реальному часі
+
+paths:
+  /api/v1/customers/register:
+    post:
+      tags:
+        - Customers
+      summary: Реєстрація нового клієнта в системі лояльності
+      description: |
+        Створює новий обліковий запис клієнта з початковим рівнем лояльності STANDARD.
+        Автоматично валідує унікальність email та форматує номер телефону.
+      operationId: registerCustomer
+      requestBody:
+        description: Дані нового клієнта для створення профілю
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCustomerRequest'
+      responses:
+        '201':
+          description: Клієнта успішно зареєстровано в системі
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '400':
+          description: Некоректні вхідні дані або помилка валідації DTO
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Клієнт з таким email вже існує в системі
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутрішня системна помилка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/customers/{id}:
+    get:
+      tags:
+        - Customers
+      summary: Отримання профілю клієнта за ідентифікатором
+      description: Повертає актуальний стан профілю клієнта, рівень лояльності та статус анонімізації.
+      operationId: getCustomerById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Унікальний ідентифікатор клієнта (UUID або строковий ID)
+          schema:
+            type: string
+            example: cust-12345
+      responses:
+        '200':
+          description: Профіль клієнта успішно знайдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '404':
+          description: Клієнта з вказаним ID не знайдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутрішня системна помилка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/customers/{id}/personal-data:
+    get:
+      tags:
+        - Privacy Engineering
+      summary: GDPR Article 15 — Експорт персональних даних суб'єкта
+      description: |
+        Здійснює машинно-читний експорт усіх збережених персональних даних клієнта,
+        включно з історією згод та даними профілю. Захищено перевіркою автентифікованого ID.
+      operationId: exportPersonalData
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Ідентифікатор суб'єкта персональних даних
+          schema:
+            type: string
+            example: cust-12345
+        - name: x-user-id
+          in: header
+          required: true
+          description: Ідентифікатор авторизованого суб'єкта (захист від вразливостей IDOR)
+          schema:
+            type: string
+            example: cust-12345
+      responses:
+        '200':
+          description: Структурований JSON-пакет персональних даних суб'єкта
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonalDataExportResponse'
+        '401':
+          description: Відсутній заголовок автентифікації x-user-id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Спроба несанкціонованого доступу до чужого профілю (IDOR Alert)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Суб'єкта даних не знайдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/customers/{id}/anonymize:
+    post:
+      tags:
+        - Privacy Engineering
+      summary: GDPR Article 17 — Право на забуття (Право на анонімізацію)
+      description: |
+        Проводить безповоротну криптографічну псевдонімізацію або анонімізацію персональних даних (PII),
+        замінюючи email, ім'я та телефон незворотними масками згідно з політикою стирання даних.
+      operationId: anonymizeCustomer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Ідентифікатор клієнта для анонімізації
+          schema:
+            type: string
+            example: cust-12345
+        - name: x-user-id
+          in: header
+          required: true
+          description: Ідентифікатор авторизованого суб'єкта
+          schema:
+            type: string
+            example: cust-12345
+      responses:
+        '200':
+          description: Профіль успішно анонімізовано (операція ідемпотентна)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnonymizeCustomerResponse'
+        '403':
+          description: Заборонено виконувати анонімізацію чужого профілю
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Клієнта не знайдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/customers/{id}/consents/grant:
+    post:
+      tags:
+        - Consent Management
+      summary: GDPR Article 7 — Надання та фіксація згоди суб'єкта
+      description: Фіксує волевиявлення суб'єкта на конкретну мету обробки даних (наприклад, marketing, analytics).
+      operationId: grantConsent
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Ідентифікатор користувача
+          schema:
+            type: string
+            example: cust-12345
+        - name: x-user-id
+          in: header
+          required: true
+          description: Авторизований користувач
+          schema:
+            type: string
+            example: cust-12345
+      requestBody:
+        description: Параметри згоди та мета обробки
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GrantConsentRequest'
+      responses:
+        '200':
+          description: Згоду успішно надано та зафіксовано в системі
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentResponse'
+        '400':
+          description: Неприпустимий purposeId або відсутні обов'язкові параметри
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/fault-injection:
+    get:
+      tags:
+        - Fault Injection
+      summary: Отримання поточного активного режиму ін'єкції збоїв
+      description: Повертає конфігурацію активного режиму відмовостійкості (none, 500, timeout).
+      operationId: getFaultMode
+      responses:
+        '200':
+          description: Поточний режим хаос-тестування
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FaultModeStatusResponse'
+    post:
+      tags:
+        - Fault Injection
+      summary: Динамічне перемикання режиму збоїв (Chaos Testing)
+      description: Дозволяє імітувати падіння сервера 500 або штучні затримки без перезавантаження процесу.
+      operationId: setFaultMode
+      requestBody:
+        description: Цільовий режим збою
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetFaultModeRequest'
+      responses:
+        '200':
+          description: Режим успішно активовано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SetFaultModeResponse'
+        '400':
+          description: Неприпустимий режим збою (дозволені none, 500, timeout)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    CreateCustomerRequest:
+      type: object
+      required:
+        - name
+        - email
+      properties:
+        name:
+          type: string
+          description: Повне ім'я клієнта
+          example: Олександр Шевченко
+        email:
+          type: string
+          format: email
+          description: Унікальна електронна адреса клієнта
+          example: alex.shevchenko@example.com
+        phone:
+          type: string
+          description: Номер телефону у міжнародному форматі E.164
+          example: '+380671234567'
+
+    CustomerResponse:
+      type: object
+      required:
+        - id
+        - name
+        - email
+        - tier
+        - anonymized
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: Унікальний ідентифікатор профілю
+          example: 4a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d
+        name:
+          type: string
+          description: Ім'я клієнта або псевдонім після анонімізації
+          example: Олександр Шевченко
+        email:
+          type: string
+          format: email
+          description: Електронна адреса
+          example: alex.shevchenko@example.com
+        phone:
+          type: string
+          description: Телефон
+          example: '+380671234567'
+        tier:
+          type: string
+          enum: [STANDARD, PREMIUM]
+          description: Рівень участі у програмі лояльності
+          example: STANDARD
+        anonymized:
+          type: boolean
+          description: Прапорець виконання процедури стирання даних
+          example: false
+        createdAt:
+          type: string
+          format: date-time
+          description: Час реєстрації у системі
+          example: '2026-11-16T10:00:00.000Z'
+
+    PersonalDataExportResponse:
+      type: object
+      required:
+        - subjectId
+        - exportedAt
+        - profile
+        - consents
+      properties:
+        subjectId:
+          type: string
+          description: Ідентифікатор суб'єкта даних
+          example: cust-12345
+        exportedAt:
+          type: string
+          format: date-time
+          description: Мітка часу формування вивантаження
+          example: '2026-11-16T10:15:30.000Z'
+        profile:
+          $ref: '#/components/schemas/CustomerResponse'
+        consents:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConsentResponse'
+          description: Повна історія наданих та відкликаних згод
+
+    AnonymizeCustomerResponse:
+      type: object
+      required:
+        - subjectId
+        - anonymized
+        - completedAt
+      properties:
+        subjectId:
+          type: string
+          description: Ідентифікатор анонімізованого клієнта
+          example: cust-12345
+        anonymized:
+          type: boolean
+          description: Статус успішного виконання анонімізації
+          example: true
+        completedAt:
+          type: string
+          format: date-time
+          description: Час виконання операції
+          example: '2026-11-16T10:20:00.000Z'
+
+    GrantConsentRequest:
+      type: object
+      required:
+        - purposeId
+      properties:
+        purposeId:
+          type: string
+          description: Ідентифікатор цілі обробки даних
+          enum: [marketing_email, analytics_tracking, third_party_sharing]
+          example: marketing_email
+
+    ConsentResponse:
+      type: object
+      required:
+        - id
+        - userId
+        - purposeId
+        - granted
+        - grantedAt
+      properties:
+        id:
+          type: string
+          description: Унікальний номер запису згоди
+          example: consent-uuid-9876
+        userId:
+          type: string
+          description: Ідентифікатор користувача
+          example: cust-12345
+        purposeId:
+          type: string
+          description: Категорія дозволу
+          example: marketing_email
+        granted:
+          type: boolean
+          description: Стан згоди (true - надано, false - відкликано)
+          example: true
+        grantedAt:
+          type: string
+          format: date-time
+          description: Дата надання згоди
+          example: '2026-11-16T10:05:00.000Z'
+
+    SetFaultModeRequest:
+      type: object
+      required:
+        - mode
+      properties:
+        mode:
+          type: string
+          enum: [none, '500', timeout]
+          description: Режим ін'єкції збоїв
+          example: '500'
+
+    SetFaultModeResponse:
+      type: object
+      required:
+        - success
+        - activeFaultMode
+      properties:
+        success:
+          type: boolean
+          example: true
+        activeFaultMode:
+          type: string
+          enum: [none, '500', timeout]
+          example: '500'
+
+    FaultModeStatusResponse:
+      type: object
+      required:
+        - activeFaultMode
+      properties:
+        activeFaultMode:
+          type: string
+          example: none
+
+    ErrorResponse:
+      type: object
+      required:
+        - statusCode
+        - error
+        - message
+        - timestamp
+      properties:
+        statusCode:
+          type: integer
+          description: HTTP статус код помилки
+          example: 400
+        error:
+          type: string
+          description: Стандартизована назва або категорія помилки
+          example: Bad Request
+        message:
+          type: string
+          description: Людино-читний детальний опис проблеми
+          example: Поле 'email' має містити валідну адресу електронної пошти
+        timestamp:
+          type: string
+          format: date-time
+          description: Час виникнення помилки на сервері
+          example: '2026-11-16T10:25:00.000Z'
+        correlationId:
+          type: string
+          description: Наскрізний ідентифікатор трасування запиту
+          example: corr-f47ac10b-58cc-4372-a567-0e02b2c3d479

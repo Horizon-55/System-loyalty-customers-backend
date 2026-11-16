@@ -61,9 +61,36 @@ flowchart LR
 
 ---
 
-## 4. Інтерактивна консоль Swagger UI
+## 4. Інтерактивна консоль Swagger UI та Клієнтський SDK
 
-Переглянути інтерактивну специфікацію та виконати тестові запити через браузер можна за адресою:
-👉 **[http://localhost:3001/api-docs](http://localhost:3001/api-docs)**
+### Онлайн Swagger UI
+Переглянути інтерактивну специфікацію та виконати тестові виклики (Try It Out) через браузер можна за адресою:  
+👉 **[http://localhost:3001/api-docs](http://localhost:3001/api-docs)**  
+Контракт у форматі YAML доступний безпосередньо у репозиторії: **[openapi.yaml](openapi.yaml)**.
 
-> Пов'язані документи: [[sdd]] | [[isd]] | [[CONTRIBUTING]]
+### Генерація та використання клієнтського SDK (`sdk-client/`)
+Клієнтський TypeScript SDK скомпільовано на основі контракту:
+```typescript
+import { SystemLoyaltyClient } from '../sdk-client/index.js';
+
+const client = new SystemLoyaltyClient({ baseUrl: 'http://localhost:3001' });
+
+// 1. Реєстрація клієнта
+const customer = await client.registerCustomer({
+    name: 'Олександр Шевченко',
+    email: 'alex.shevchenko@example.com',
+    phone: '+380671234567'
+});
+
+// 2. GDPR експорт персональних даних
+const exportData = await client.exportPersonalData(customer.id, customer.id);
+console.log('GDPR Article 15 Export:', exportData.profile.tier);
+```
+
+### Верифікація якості контракту (Spectral Linter)
+```bash
+npx spectral lint docs/api/openapi.yaml
+# Вердикт: 0 errors (PASS)
+```
+
+> Пов'язані документи (Obsidian Graph): [[sdd]] | [[isd]] | [[CONTRIBUTING]] | [[ADR-0001-nodejs-typescript]]

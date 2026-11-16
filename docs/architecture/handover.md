@@ -1,4 +1,15 @@
 ---
+owner: Solution Architect
+status: published
+review_date: 2027-02-16
+tags:
+  - architecture
+  - handover
+  - onboarding
+  - bus-factor
+---
+
+---
 owner: Horizon-55
 status: published
 review_date: 2027-02-16
