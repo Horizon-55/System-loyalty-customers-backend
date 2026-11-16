@@ -1,0 +1,72 @@
+name: Documentation as Code (DaC) CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  validate-and-build-docs:
+    name: DaC Strict Verification & MkDocs Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 1. Checkout Source Code with Full Git History
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required for git-revision-date-localized plugin
+
+      - name: 2. Setup Python Runtime (v3.11)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 3. Setup Node.js Runtime (v20 LTS)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 4. Install Static Site Generator & MkDocs Plugins
+        run: |
+          python -m pip install --upgrade pip
+          pip install mkdocs-material mkdocs-mermaid2-plugin mkdocs-git-revision-date-localized-plugin
+
+      - name: 5. Install Node.js Audit & Linter Tooling
+        run: |
+          npm install --ignore-scripts
+
+      - name: 6. Execute Spectral API Contract Quality Gate
+        run: |
+          echo "=== RUNNING SPECTRAL LINTER ON OPENAPI 3.0.3 CONTRACT ==="
+          npx spectral lint docs/api/openapi.yaml
+
+      - name: 7. Execute Automated Review Date Currency Audit
+        run: |
+          echo "=== EXECUTING AUTOMATED REVIEW DATE CURRENCY AUDIT ==="
+          node scripts/check-review-dates.js
+
+      - name: 8. Execute Strict MkDocs Build ("Не збирається — не їде")
+        run: |
+          echo "=== EXECUTING STRICT MKDOCS BUILD (WARNINGS = ERRORS) ==="
+          mkdocs build --strict
+
+      - name: 9. Deploy Documentation Site to GitHub Pages
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
