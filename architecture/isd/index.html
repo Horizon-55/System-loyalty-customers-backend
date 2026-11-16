@@ -27,7 +27,7 @@
     
     
       
-        <title>Інфраструктура (ISD) - System Loyalty Customers Backend — База Знань</title>
+        <title>Infrastructure Specification Document (ISD) - System Loyalty Customers Backend — База Знань</title>
       
     
     
@@ -112,7 +112,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Інфраструктура (ISD)
+              Infrastructure Specification Document (ISD)
             
           </span>
         </div>
@@ -293,6 +293,26 @@
   
   
   Архітектурний паспорт (Рівень 4)
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../runbooks/RB-001/" class="md-tabs__link">
+          
+  
+  
+  Експлуатація та SRE
 
         </a>
       </li>
@@ -851,14 +871,47 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. CI/CD Пайплайн (GitHub Actions)">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-operations-reliability-engineering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Експлуатаційні процедури (Operations &amp; Reliability Engineering)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Експлуатаційні процедури (Operations &amp; Reliability Engineering)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#cicd-history" class="md-nav__link">
+  <a href="#41" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CI/CD History (Останні запуски):
+        4.1. Процедура штатного розгортання релізу
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2. Порядок оновлення з міграціями даних
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-disaster-recovery-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3. Процедура відновлення після аварії (Disaster Recovery Order)
       
     </span>
   </a>
@@ -871,10 +924,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-reliability-engineering-rto-rpo" class="md-nav__link">
+  <a href="#5-reliability-engineering-rto-rpo" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Reliability Engineering: RTO та RPO
+        5. Reliability Engineering: Розрахунок RTO та RPO
       
     </span>
   </a>
@@ -882,21 +935,49 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-security-architecture" class="md-nav__link">
+  <a href="#6-backup-policy-3-2-1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Security Architecture
+        6. Політика резервного копіювання (Backup Policy 3-2-1)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Політика резервного копіювання (Backup Policy 3-2-1)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-retention-schedule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1. Розклад та глибина зберігання (Retention Schedule)
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#6-deployment-checklist-dev-production" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#62-restore-drill" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Deployment Checklist (Dev → Production)
+        6.2. Регламент процедури тестового відновлення (Restore Drill)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-security-architecture-controls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Security Architecture &amp; Controls
       
     </span>
   </a>
@@ -1332,6 +1413,100 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Експлуатація та SRE
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Експлуатація та SRE
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/RB-001/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Регламент RB-001 (DLQ)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -1400,14 +1575,47 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. CI/CD Пайплайн (GitHub Actions)">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-operations-reliability-engineering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Експлуатаційні процедури (Operations &amp; Reliability Engineering)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Експлуатаційні процедури (Operations &amp; Reliability Engineering)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#cicd-history" class="md-nav__link">
+  <a href="#41" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CI/CD History (Останні запуски):
+        4.1. Процедура штатного розгортання релізу
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2. Порядок оновлення з міграціями даних
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-disaster-recovery-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3. Процедура відновлення після аварії (Disaster Recovery Order)
       
     </span>
   </a>
@@ -1420,10 +1628,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-reliability-engineering-rto-rpo" class="md-nav__link">
+  <a href="#5-reliability-engineering-rto-rpo" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Reliability Engineering: RTO та RPO
+        5. Reliability Engineering: Розрахунок RTO та RPO
       
     </span>
   </a>
@@ -1431,21 +1639,49 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-security-architecture" class="md-nav__link">
+  <a href="#6-backup-policy-3-2-1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Security Architecture
+        6. Політика резервного копіювання (Backup Policy 3-2-1)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Політика резервного копіювання (Backup Policy 3-2-1)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-retention-schedule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1. Розклад та глибина зберігання (Retention Schedule)
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#6-deployment-checklist-dev-production" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#62-restore-drill" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Deployment Checklist (Dev → Production)
+        6.2. Регламент процедури тестового відновлення (Restore Drill)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-security-architecture-controls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Security Architecture &amp; Controls
       
     </span>
   </a>
@@ -1472,25 +1708,14 @@
   
 
 
-<hr />
-<p>owner: Horizon-55
-status: published
-review_date: 2027-02-16
-tags:
-  - infrastructure
-  - isd
-  - devops
-  - rto-rpo
-  - ci-cd</p>
-<hr />
 <h1 id="infrastructure-specification-document-isd">Infrastructure Specification Document (ISD)</h1>
 <h2 id="system-loyalty-customers-backend">System-loyalty-customers-backend</h2>
 <blockquote>
-<p><strong>Версія:</strong> 1.0.0<br />
+<p><strong>Версія:</strong> 1.1.0<br />
 <strong>Дата:</strong> 2026-11-16<br />
-<strong>Статус:</strong> Active<br />
-<strong>Розробник:</strong> Horizon-55<br />
-<strong>Останнє оновлення:</strong> Лабораторна робота №10 — Documentation Engineering  </p>
+<strong>Статус:</strong> Active / Production-Ready<br />
+<strong>Власник:</strong> DevOps Engineer / SRE Team<br />
+<strong>Останнє оновлення:</strong> Лабораторна робота №12 — SRE Runbooks, SLO/SLA та Backup Policy  </p>
 </blockquote>
 <hr />
 <h2 id="1">1. Мережева Топологія</h2>
@@ -1510,11 +1735,13 @@ tags:
     end
 
     subgraph Messaging["📨 Message Broker"]
-        RMQ["RabbitMQ\n:5672 (AMQP)\n:15672 (Management UI)\n---\nQueue: customer.events\nQueue: point.events"]
+        RMQ["RabbitMQ\n:5672 (AMQP)\n:15672 (Management UI)\n---\nQueue: customer.events\nQueue: point.events\nQueue: loyalty.points.dlq"]
     end
 
-    subgraph Storage["🗃️ Data Storage Layer"]
-        MDB["MongoDB (MongoMemoryServer)\nIn-Process / Test\n---\nCollection: customers\nCollection: consents"]
+    subgraph Storage["🗃️ Data &amp; Cache Layer"]
+        MDB["MongoDB / MongoMemoryServer\nReplicaSet / WAL Logs\n---\nCollection: customers\nCollection: points_ledger"]
+
+        REDIS["Redis :6379\nDistributed Lock (Redlock)\nIdempotency &amp; Token Bucket"]
 
         CONSUL["Consul\nService Registry\n---\nHealth Checks\nService Discovery"]
     end
@@ -1527,6 +1754,8 @@ tags:
     PS --&gt;|"AMQP Subscribe"| RMQ
     RMQ --&gt;|"AMQP Subscribe"| CS
     CS --&gt;|"Read / Write"| MDB
+    CS --&gt;|"Distributed Lock"| REDIS
+    PS --&gt;|"Distributed Lock"| REDIS
     CS --&gt;|"Register"| CONSUL
     PS --&gt;|"Register"| CONSUL</code></pre>
 <hr />
@@ -1545,237 +1774,277 @@ tags:
 <td style="text-align: left;"><strong>Platform</strong></td>
 <td style="text-align: center;">Windows / macOS local</td>
 <td style="text-align: center;">GitHub Actions (ubuntu-latest)</td>
-<td style="text-align: center;">Cloud VPS / Docker</td>
+<td style="text-align: center;">Cloud VPS / Kubernetes (EKS/GKE)</td>
 </tr>
 <tr>
 <td style="text-align: left;"><strong>Node.js</strong></td>
 <td style="text-align: center;">v24.x</td>
 <td style="text-align: center;">v20 LTS</td>
-<td style="text-align: center;">v20 LTS</td>
+<td style="text-align: center;">v20 LTS (Alpine Container)</td>
 </tr>
 <tr>
 <td style="text-align: left;"><strong>Database</strong></td>
 <td style="text-align: center;">MongoMemoryServer</td>
 <td style="text-align: center;">MongoMemoryServer</td>
-<td style="text-align: center;">MongoDB Atlas / Standalone</td>
+<td style="text-align: center;">MongoDB ReplicaSet (3 nodes)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Cache / Lock</strong></td>
+<td style="text-align: center;">Redis 7.x (local)</td>
+<td style="text-align: center;">Redis (mock/container)</td>
+<td style="text-align: center;">Redis Cluster (HA Sentinel)</td>
 </tr>
 <tr>
 <td style="text-align: left;"><strong>RabbitMQ</strong></td>
 <td style="text-align: center;">Local Docker</td>
 <td style="text-align: center;">— (mocked)</td>
-<td style="text-align: center;">CloudAMQP</td>
+<td style="text-align: center;">CloudAMQP High-Availability</td>
 </tr>
 <tr>
 <td style="text-align: left;"><strong>API Gateway</strong></td>
 <td style="text-align: center;">localhost:3000</td>
 <td style="text-align: center;">—</td>
-<td style="text-align: center;">Nginx / Cloudflare</td>
+<td style="text-align: center;">Nginx Ingress / Cloudflare SSL</td>
 </tr>
 <tr>
 <td style="text-align: left;"><strong>Customer Service</strong></td>
 <td style="text-align: center;">localhost:3001</td>
 <td style="text-align: center;">localhost:3001</td>
-<td style="text-align: center;">container:3001</td>
+<td style="text-align: center;">container:3001 (Replica count &gt;= 2)</td>
 </tr>
 <tr>
 <td style="text-align: left;"><strong>Point Service</strong></td>
 <td style="text-align: center;">localhost:3002</td>
 <td style="text-align: center;">—</td>
-<td style="text-align: center;">container:3002</td>
+<td style="text-align: center;">container:3002 (Replica count &gt;= 2)</td>
 </tr>
 <tr>
 <td style="text-align: left;"><strong>Secret Management</strong></td>
-<td style="text-align: center;">.env (gitignored)</td>
+<td style="text-align: center;"><code>.env</code> (gitignored)</td>
 <td style="text-align: center;">GitHub Secrets</td>
-<td style="text-align: center;">Vault / Env Vars</td>
+<td style="text-align: center;">HashiCorp Vault / AWS Secrets Manager</td>
 </tr>
 <tr>
 <td style="text-align: left;"><strong>Monitoring</strong></td>
 <td style="text-align: center;">Console logs</td>
 <td style="text-align: center;">GitHub Actions logs</td>
-<td style="text-align: center;">Prometheus + Grafana</td>
+<td style="text-align: center;">Prometheus + Grafana + Alertmanager</td>
 </tr>
 </tbody>
 </table>
 <hr />
 <h2 id="3-cicd-github-actions">3. CI/CD Пайплайн (GitHub Actions)</h2>
-<pre class="mermaid"><code>flowchart LR
-    subgraph Trigger["⚡ Trigger"]
-        PUSH["git push → main\nor Pull Request"]
-    end
-
-    subgraph Pipeline["🔄 GitHub Actions Pipeline\n.github/workflows/complexity-hotspots.yml"]
-        S1["Step 1\nCheckout\n(fetch-depth: 0\nfull git history)"]
-        S2["Step 2\nSetup Node.js v20\n+ npm cache"]
-        S3["Step 3\nInstall Dependencies\nnpm install\n(monorepo + services)"]
-        S4["Step 4\n🔬 Chapin Semantic\nData Complexity Audit\nnpm run chapin:audit"]
-        S5["Step 5\n🧬 Mutation Immunity\nUnit Tests\nnpm run test:mutation"]
-        S6["Step 6\n📊 Halstead &amp; McCabe\nBaseline Telemetry\nnpm run complexity:baseline"]
-        S7["Step 7\n🗺️ Hotspots Risk Matrix\nJSON Export\nnpm run hotspots:audit"]
-        S8["Step 8\n📤 Upload Artifacts\nreports/hotspots-matrix.json\nretention: 30 days"]
-    end
-
-    subgraph Gates["✅ Quality Gates"]
-        QG1["CC ≤ 10\n(Cyclomatic Complexity)"]
-        QG2["Halstead V ≤ 300\nper function"]
-        QG3["Chapin Q ≤ 20\nper module"]
-        QG4["All tests PASS\n(no mutations survive)"]
-    end
-
-    PUSH --&gt; S1 --&gt; S2 --&gt; S3 --&gt; S4 --&gt; S5 --&gt; S6 --&gt; S7 --&gt; S8
-    S4 -.-&gt;|"enforces"| QG3
-    S5 -.-&gt;|"enforces"| QG4
-    S6 -.-&gt;|"enforces"| QG1
-    S6 -.-&gt;|"enforces"| QG2</code></pre>
-<h3 id="cicd-history">CI/CD History (Останні запуски):</h3>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;">Run ID</th>
-<th style="text-align: left;">SHA</th>
-<th style="text-align: center;">Статус</th>
-<th style="text-align: left;">Опис</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">42601129359</td>
-<td style="text-align: left;"><code>1a97519</code></td>
-<td style="text-align: center;">✅ SUCCESS</td>
-<td style="text-align: left;">refactor(audit): replace inheritance with composition pattern, PASS</td>
-</tr>
-<tr>
-<td style="text-align: left;">42596945985</td>
-<td style="text-align: left;"><code>a0ab991</code></td>
-<td style="text-align: center;">✅ SUCCESS</td>
-<td style="text-align: left;">fix(ci): resolve npm install path for customer-service</td>
-</tr>
-<tr>
-<td style="text-align: left;">42589818685</td>
-<td style="text-align: left;"><code>c1072a0</code></td>
-<td style="text-align: center;">❌ FAILURE</td>
-<td style="text-align: left;">ci(hotspots): implement cloud complexity scanner (bootstrap failure)</td>
-</tr>
-</tbody>
-</table>
+<p>Система використовує паралельні та взаємодоповнюючі конвеєри безперервної інтеграції:
+1. <strong><code>.github/workflows/docs.yml</code></strong>: Перевірка контрактів Spectral, аудит дат актуальності документації та збірка MkDocs у режимі <code>--strict</code>.
+2. <strong><code>.github/workflows/complexity-hotspots.yml</code></strong>: Семантичний аудит складності даних Чепіна, мутаційні тести, Halstead/McCabe Quality Gate.</p>
 <hr />
-<h2 id="4-reliability-engineering-rto-rpo">4. Reliability Engineering: RTO та RPO</h2>
+<h2 id="4-operations-reliability-engineering">4. Експлуатаційні процедури (Operations &amp; Reliability Engineering)</h2>
+<h3 id="41">4.1. Процедура штатного розгортання релізу</h3>
+<p>Розгортання здійснюється за схемою <strong>Blue-Green</strong> або <strong>Rolling Update</strong> для забезпечення нульового простою (Zero Downtime):</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># 1. Завантаження оновлених образів або коду</span>
+git<span class="w"> </span>fetch<span class="w"> </span>origin<span class="w"> </span>main<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>git<span class="w"> </span>checkout<span class="w"> </span>tags/docs-v1.0
+
+<span class="c1"># 2. Встановлення виробничих залежностей</span>
+npm<span class="w"> </span>ci<span class="w"> </span>--legacy-peer-deps<span class="w"> </span>--omit<span class="o">=</span>dev
+
+<span class="c1"># 3. Компіляція TypeScript артефактів</span>
+npm<span class="w"> </span>run<span class="w"> </span>build<span class="w"> </span>--prefix<span class="w"> </span>customer-service
+
+<span class="c1"># 4. Запуск сервісів у фоновому режимі (або docker compose up -d)</span>
+docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>--build<span class="w"> </span>customer-service<span class="w"> </span>point-service
+
+<span class="c1"># 5. Верифікація Health Check (Smoke Testing)</span>
+curl<span class="w"> </span>-f<span class="w"> </span>-s<span class="w"> </span>http://localhost:3000/health<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>.
+<span class="c1"># Критерій: "status": "UP" по всіх підсистемах (db, redis, rabbitmq)</span>
+</code></pre></div>
+<h3 id="42">4.2. Порядок оновлення з міграціями даних</h3>
+<p>Усі міграції бази даних підлягають версійному контролю та описані у журналі змін <code>CHANGELOG.md</code> за стандартом SemVer.
+- <strong>Правило сумісності (Expand-Contract Pattern):</strong>
+  1. <em>Фаза Expand (Попередня сумісність):</em> Додаються нові поля та індекси без видалення старих. Новий реліз розгортається паралельно зі старим.
+  2. <em>Фаза Data Backfill:</em> Асинхронний скрипт заповнює нові поля історичними даними.
+  3. <em>Фаза Contract:</em> Після перемикання 100% трафіку на нову версію, окремим релізом видаляються застарілі атрибути схеми.
+- <strong>Команди виконання міграції:</strong>
+  <div class="highlight"><pre><span></span><code><span class="c1"># Виконання міграції вперед</span>
+npm<span class="w"> </span>run<span class="w"> </span>db:migrate<span class="w"> </span>--prefix<span class="w"> </span>customer-service
+
+<span class="c1"># Екстрений відкат міграції (Rollback)</span>
+npm<span class="w"> </span>run<span class="w"> </span>db:migrate:undo<span class="w"> </span>--prefix<span class="w"> </span>customer-service
+</code></pre></div></p>
+<h3 id="43-disaster-recovery-order">4.3. Процедура відновлення після аварії (Disaster Recovery Order)</h3>
+<p>Під час холодного старту або повного збою інфраструктури підняття сервісів виконується <strong>суворо за графом залежностей</strong>:</p>
+<div class="highlight"><pre><span></span><code>[1. Базові сховища]        PostgreSQL / MongoDB  ──►  Redis Cluster
+                                     │                     │
+                                     ▼                     ▼
+[2. Асинхронна шина]                 RabbitMQ Message Broker
+                                                │
+                                                ▼
+[3. Доменні сервіси]         point-service   &amp;   customer-service
+                                                │
+                                                ▼
+[4. Точка входу]                           api-gateway
+</code></pre></div>
+<p><strong>Консольний регламент відновлення:</strong>
+<div class="highlight"><pre><span></span><code><span class="c1"># Крок 1: Запуск бази даних та перевірка коннекту</span>
+docker<span class="w"> </span>compose<span class="w"> </span>start<span class="w"> </span>mongodb<span class="w"> </span>redis
+<span class="k">until</span><span class="w"> </span>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>redis<span class="w"> </span>redis-cli<span class="w"> </span>ping<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-q<span class="w"> </span>PONG<span class="p">;</span><span class="w"> </span><span class="k">do</span><span class="w"> </span>sleep<span class="w"> </span><span class="m">2</span><span class="p">;</span><span class="w"> </span><span class="k">done</span>
+
+<span class="c1"># Крок 2: Запуск брокера повідомлень</span>
+docker<span class="w"> </span>compose<span class="w"> </span>start<span class="w"> </span>rabbitmq
+<span class="k">until</span><span class="w"> </span>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>rabbitmq<span class="w"> </span>rabbitmqctl<span class="w"> </span>status<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-q<span class="w"> </span><span class="s2">"Running"</span><span class="p">;</span><span class="w"> </span><span class="k">do</span><span class="w"> </span>sleep<span class="w"> </span><span class="m">3</span><span class="p">;</span><span class="w"> </span><span class="k">done</span>
+
+<span class="c1"># Крок 3: Запуск доменних мікросервісів</span>
+docker<span class="w"> </span>compose<span class="w"> </span>start<span class="w"> </span>point-service<span class="w"> </span>customer-service
+sleep<span class="w"> </span><span class="m">5</span>
+
+<span class="c1"># Крок 4: Запуск API Gateway</span>
+docker<span class="w"> </span>compose<span class="w"> </span>start<span class="w"> </span>api-gateway
+
+<span class="c1"># Крок 5: Повний аудит готовності</span>
+curl<span class="w"> </span>-f<span class="w"> </span>http://localhost:3000/health
+</code></pre></div></p>
+<hr />
+<h2 id="5-reliability-engineering-rto-rpo">5. Reliability Engineering: Розрахунок RTO та RPO</h2>
 <table>
 <thead>
 <tr>
 <th style="text-align: left;">Параметр</th>
-<th style="text-align: left;">Визначення</th>
-<th style="text-align: center;">Цільове значення</th>
-<th style="text-align: center;">Поточний стан</th>
+<th style="text-align: left;">Інженерне визначення</th>
+<th style="text-align: center;">Цільовий норматив</th>
+<th style="text-align: left;">Розрахункове обґрунтування</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td style="text-align: left;"><strong>RTO</strong> (Recovery Time Objective)</td>
-<td style="text-align: left;">Максимально допустимий час відновлення після збою</td>
+<td style="text-align: left;">Максимально допустимий час простою системи до повного відновлення</td>
 <td style="text-align: center;"><strong>&lt; 15 хвилин</strong></td>
-<td style="text-align: center;">⚠️ Manual (no auto-restart)</td>
+<td style="text-align: left;">5 хв — виявлення алертом + 5 хв — авто-рестарт контейнерів або промоушн репліки + 5 хв — верифікація</td>
 </tr>
 <tr>
 <td style="text-align: left;"><strong>RPO</strong> (Recovery Point Objective)</td>
-<td style="text-align: left;">Максимально допустима втрата даних</td>
-<td style="text-align: center;"><strong>0 хвилин</strong></td>
-<td style="text-align: center;">✅ In-memory (no persistence loss)</td>
+<td style="text-align: left;">Максимально допустимий обсяг втрати транзакційних даних у часі</td>
+<td style="text-align: center;"><strong>&lt; 5 хвилин</strong></td>
+<td style="text-align: left;">Забезпечується безперервною реплікацією WAL-логів (Write-Ahead Logging) кожні 5 хв на віддалене сховище</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Uptime SLO</strong></td>
+<td style="text-align: left;">Внутрішня ціль доступності за 30-денним вікном</td>
+<td style="text-align: center;"><strong>≥ 99.5%</strong></td>
+<td style="text-align: left;">Допустимий ліміт простою (Error Budget) = <strong>216 хвилин на місяць</strong></td>
 </tr>
 <tr>
 <td style="text-align: left;"><strong>Uptime SLA</strong></td>
-<td style="text-align: left;">Цільова доступність</td>
-<td style="text-align: center;"><strong>99.5%</strong></td>
-<td style="text-align: center;">⚠️ Single instance</td>
+<td style="text-align: left;">Зовнішній договірний рівень доступності</td>
+<td style="text-align: center;"><strong>≥ 99.0%</strong></td>
+<td style="text-align: left;">Допустимий ліміт простою до сплати неустойки = <strong>432 хвилини на місяць</strong></td>
 </tr>
 <tr>
-<td style="text-align: left;"><strong>MTTR</strong> (Mean Time to Repair)</td>
-<td style="text-align: left;">Середній час відновлення</td>
-<td style="text-align: center;"><strong>&lt; 10 хвилин</strong></td>
-<td style="text-align: center;">⚠️ Manual deployment</td>
-</tr>
-<tr>
-<td style="text-align: left;"><strong>MTBF</strong> (Mean Time Between Failures)</td>
-<td style="text-align: left;">Середній час між відмовами</td>
-<td style="text-align: center;"><strong>&gt; 720 годин</strong></td>
-<td style="text-align: center;">✅ Stable (Fault Injection tested)</td>
+<td style="text-align: left;"><strong>Буфер надійності</strong></td>
+<td style="text-align: left;">Запас часу між інженерним SLO та бізнес SLA</td>
+<td style="text-align: center;"><strong>0.5% (216 хв)</strong></td>
+<td style="text-align: left;">Забезпечує вирішення інцидентів до порушення юридичних зобов'язань</td>
 </tr>
 </tbody>
 </table>
-<blockquote>
-<p><strong>Примітка щодо MongoMemoryServer:</strong> Поточна архітектура використовує in-process database (тестове середовище). Для production обов'язковий перехід на persistent MongoDB з реплікасет для RPO = 0.</p>
-</blockquote>
 <hr />
-<h2 id="5-security-architecture">5. Security Architecture</h2>
+<h2 id="6-backup-policy-3-2-1">6. Політика резервного копіювання (Backup Policy 3-2-1)</h2>
+<p>Для забезпечення фінансової та юридичної цілісності даних клієнтів впроваджено міжнародний стандарт <strong>3-2-1</strong>:</p>
+<pre class="mermaid"><code>flowchart TD
+    PROD["Live Production Database\n(SSD NVMe Primary)"]
+
+    subgraph Rule321["Правило резервного копіювання 3-2-1"]
+        C1["Копія 1: Live Primary Node\n(Швидкий доступ, NVMe)"]
+        C2["Копія 2: Local Daily Snapshot\n(Окремий NAS/SAN масив у ДЦ)"]
+        C3["Копія 3: Off-site Cloud Cold Storage\n(AWS S3 Glacier, інший регіон eu-central-1)"]
+    end
+
+    PROD --&gt;|"Streaming WAL"| C1
+    PROD --&gt;|"Daily pg_dump/mongodump"| C2
+    C2 --&gt;|"Encrypted Sync (AES-256)"| C3</code></pre>
+<ol>
+<li><strong>3 копії даних:</strong> 1 основна виробнича + 1 локальна резервна + 1 географічно ізольована хмарна копія.</li>
+<li><strong>2 різні носії:</strong> Високошвидкісні масиви SSD (Primary/Replica) та незалежне блочне/об'єктне сховище (S3/Glacier).</li>
+<li><strong>1 копія поза майданчиком (Off-site):</strong> Хмарний регіон, фізично віддалений від основного дата-центру на &gt; 500 км для захисту від техногенних катастроф.</li>
+</ol>
+<h3 id="61-retention-schedule">6.1. Розклад та глибина зберігання (Retention Schedule)</h3>
+<ul>
+<li><strong>Повні копії (Full Backup):</strong> Щотижня у неділю о 02:00 UTC (зберігаються 90 днів).</li>
+<li><strong>Диференційні / Інкрементні копії (Incremental):</strong> Щодня о 03:00 UTC (зберігаються 30 днів).</li>
+<li><strong>Журнали транзакцій (WAL / Oplog streaming):</strong> Кожні 5 хвилин для забезпечення RPO &lt; 5 хв (зберігаються 7 днів).</li>
+<li><strong>Шифрування:</strong> Усі резервні архіви шифруються за алгоритмом <strong>AES-256-GCM</strong> з використанням ключів AWS KMS або Vault.</li>
+</ul>
+<h3 id="62-restore-drill">6.2. Регламент процедури тестового відновлення (Restore Drill)</h3>
+<p>За канонічним правилом Лекції 10:  </p>
+<blockquote>
+<p><strong>«Резервна копія, відновлення з якої ніколи не перевірялося, резервною копією не вважається!»</strong></p>
+</blockquote>
+<ul>
+<li><strong>Періодичність:</strong> Кожен перший вівторок місяця о 10:00 UTC.</li>
+<li><strong>Середовище:</strong> Ізольоване Staging-середовище (Sandbox без доступу до Production).</li>
+<li><strong>Покроковий регламент Restore Drill:</strong></li>
+<li>Автоматичне завантаження останнього повного бекапу з AWS S3.</li>
+<li>Перевірка контрольної суми архіву: <code>sha256sum -c backup_checksum.sha256</code>.</li>
+<li>Розгортання бази даних у тестовий інстанс:
+     <div class="highlight"><pre><span></span><code>mongorestore<span class="w"> </span>--drop<span class="w"> </span>--gzip<span class="w"> </span>--archive<span class="o">=</span>/tmp/backup_monthly.gz
+</code></pre></div></li>
+<li>Запуск скрипта цілісності даних (Data Integrity Smoke Test):<ul>
+<li>Перевірка відповідності суми балансів клієнтів та проводок у журналі аудиту (<code>points_ledger</code>).</li>
+<li>Перевірка цілісності індексів та унікальності ідентифікаторів.</li>
+</ul>
+</li>
+<li>Фіксація результатів у журналі аудиту відновлення (<code>reports/restore-drill-log.md</code>). Критерій успіху: відновлення триває <strong>менше 10 хвилин</strong> (RTO), розбіжність балансів = <strong>0.00 UAH</strong>.</li>
+</ul>
+<hr />
+<h2 id="7-security-architecture-controls">7. Security Architecture &amp; Controls</h2>
 <table>
 <thead>
 <tr>
 <th style="text-align: left;">Шар</th>
-<th style="text-align: left;">Механізм</th>
+<th style="text-align: left;">Механізм захисту</th>
 <th style="text-align: center;">Статус</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td style="text-align: left;">Secrets Management</td>
-<td style="text-align: left;"><code>.env</code> (gitignored) + <code>.env.example</code></td>
+<td style="text-align: left;"><code>.env</code> (gitignored) + GitHub Secrets</td>
 <td style="text-align: center;">✅</td>
 </tr>
 <tr>
 <td style="text-align: left;">Secret Scanning</td>
-<td style="text-align: left;">Gitleaks pre-commit hook</td>
+<td style="text-align: left;">Gitleaks pre-commit hook (блокує витік токенів)</td>
 <td style="text-align: center;">✅</td>
 </tr>
 <tr>
 <td style="text-align: left;">PII Data Masking</td>
-<td style="text-align: left;"><code>PiiSanitizer</code> (email/phone в логах)</td>
+<td style="text-align: left;"><code>PiiSanitizer</code> (маскування телефонів/email у логах)</td>
 <td style="text-align: center;">✅</td>
 </tr>
 <tr>
 <td style="text-align: left;">Input Validation</td>
-<td style="text-align: left;"><code>validation.middleware.ts</code></td>
+<td style="text-align: left;"><code>validation.middleware.ts</code> (валідація DTO за OpenAPI)</td>
 <td style="text-align: center;">✅</td>
 </tr>
 <tr>
 <td style="text-align: left;">Error Sanitization</td>
-<td style="text-align: left;"><code>errorHandler.middleware.ts</code> (не розкриває стек)</td>
+<td style="text-align: left;"><code>errorHandler.middleware.ts</code> (приховує стек-трейси у production)</td>
 <td style="text-align: center;">✅</td>
 </tr>
 <tr>
-<td style="text-align: left;">Fault Injection</td>
-<td style="text-align: left;"><code>faultInjection.middleware.ts</code> (Chaos Engineering)</td>
+<td style="text-align: left;">Rate Limiting</td>
+<td style="text-align: left;">Token Bucket на рівні API Gateway (захист від DDoS)</td>
 <td style="text-align: center;">✅</td>
 </tr>
 <tr>
 <td style="text-align: left;">GDPR Compliance</td>
-<td style="text-align: left;">Consent Management + Anonymization</td>
+<td style="text-align: left;">Crypto-shredding та стирання даних за запитом (ADR-0007)</td>
 <td style="text-align: center;">✅</td>
-</tr>
-<tr>
-<td style="text-align: left;">HTTPS</td>
-<td style="text-align: left;">— (передбачений через Nginx/proxy)</td>
-<td style="text-align: center;">⚠️</td>
 </tr>
 </tbody>
 </table>
 <hr />
-<h2 id="6-deployment-checklist-dev-production">6. Deployment Checklist (Dev → Production)</h2>
-<div class="highlight"><pre><span></span><code>[ ] 1. Замінити MongoMemoryServer на MongoDB Atlas (persistent storage)
-[ ] 2. Налаштувати реальний RabbitMQ (CloudAMQP або self-hosted)
-[ ] 3. Перейти на HTTPS (Nginx reverse proxy + Let's Encrypt)
-[ ] 4. Налаштувати Prometheus + Grafana для моніторингу
-[ ] 5. Увімкнути auto-restart (PM2 / Docker healthcheck)
-[ ] 6. Налаштувати backup MongoDB (RPO = 0)
-[ ] 7. Встановити CDN + Rate Limiting на API Gateway
-[ ] 8. Секрети перенести в Vault / GitHub Secrets (не .env)
-</code></pre></div>
-<hr />
 <blockquote>
-<p>Пов'язані документи (Obsidian Graph): [[sdd]] | [[maintenance]] | [[handover]] | [[environment]] | [[ADR-0002-in-memory-repository]]</p>
-</blockquote>
-<hr />
-<blockquote>
-<p>Пов'язані документи (Obsidian Graph): [[sdd]] | [[maintenance]] | [[handover]] | [[environment]] | [[ADR-0002-in-memory-repository]]</p>
+<p>Пов'язані документи (Obsidian Graph): [[sdd]] | [[maintenance]] | [[handover]] | [[RB-001]] | [[slo]] | [[ADR-0001-nodejs-typescript]]</p>
 </blockquote>
 
 

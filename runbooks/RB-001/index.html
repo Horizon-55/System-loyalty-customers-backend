@@ -1,0 +1,2087 @@
+
+<!doctype html>
+<html lang="uk" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Корпоративна інженерна база знань (Documentation as Code)">
+      
+      
+        <meta name="author" content="Horizon-55">
+      
+      
+      
+        <link rel="prev" href="../../architecture/adr/ADR-0008-sqale-financial-model/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>RB-001: Аварійне переповнення черги повідомлень (DLQ) та відновлення транзакцій лояльності - System Loyalty Customers Backend — База Знань</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#runbook-rb-001-dead-letter-queue-dlq" class="md-skip">
+          Перейти до змісту
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Хедер">
+    <a href="../.." title="System Loyalty Customers Backend — База Знань" class="md-header__button md-logo" aria-label="System Loyalty Customers Backend — База Знань" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            System Loyalty Customers Backend — База Знань
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              RB-001: Аварійне переповнення черги повідомлень (DLQ) та відновлення транзакцій лояльності
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Перемкнути на темну тему"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Перемкнути на темну тему" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Перемкнути на світлу тему"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Перемкнути на світлу тему" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Пошук" placeholder="Пошук" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Шукати">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Очистити" aria-label="Очистити" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Пошук розпочато
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Horizon-55/System-loyalty-customers-backend" title="Перейти до вихідного коду" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Horizon-55/System-loyalty-customers-backend
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Вкладки" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Головна (Рівень 1)
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../developer/CONTRIBUTING/" class="md-tabs__link">
+          
+  
+  
+  Для розробників (Рівень 2)
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/" class="md-tabs__link">
+          
+  
+  
+  Інтерфейси API (Рівень 3)
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../architecture/sdd/" class="md-tabs__link">
+          
+  
+  
+  Архітектурний паспорт (Рівень 4)
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  
+  Експлуатація та SRE
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Навігація" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="System Loyalty Customers Backend — База Знань" class="md-nav__button md-logo" aria-label="System Loyalty Customers Backend — База Знань" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    System Loyalty Customers Backend — База Знань
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Horizon-55/System-loyalty-customers-backend" title="Перейти до вихідного коду" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Horizon-55/System-loyalty-customers-backend
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Головна (Рівень 1)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Для розробників (Рівень 2)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Для розробників (Рівень 2)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/CONTRIBUTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Регламент CONTRIBUTING
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/environment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Локальне середовище
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/coding-standards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Стандарти кодування
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Інтерфейси API (Рівень 3)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Інтерфейси API (Рівень 3)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Огляд контрактів API
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Архітектурний паспорт (Рівень 4)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Архітектурний паспорт (Рівень 4)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/sdd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Системний дизайн (SDD)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/isd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Інфраструктура (ISD)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/maintenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Регламент супроводу
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/handover/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Handover-пакет
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Кущ рішень (ADR)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Кущ рішень (ADR)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/adr/ADR-0001-nodejs-typescript/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0001 Стек Node.js+TypeScript
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--accepted"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/adr/ADR-0002-in-memory-repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0002 In-Memory Repository
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--accepted"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/adr/ADR-0003-gqm-quality-matrix/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0003 GQM-матриця якості
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--accepted"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/adr/ADR-0004-complexity-thresholds/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0004 Пороги складності CC та V
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--accepted"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/adr/ADR-0005-chapin-semantic-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0005 Аудит Чепіна та Hotspots
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--accepted"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/adr/ADR-0006-god-object-decomposition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0006 Декомпозиція God Object
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--accepted"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/adr/ADR-0007-composition-over-inheritance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0007 Композиція замість спадкування
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--accepted"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/adr/ADR-0008-sqale-financial-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0008 Фінансова модель SQALE
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--accepted"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Експлуатація та SRE
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Експлуатація та SRE
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Регламент RB-001 (DLQ)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Регламент RB-001 (DLQ)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Зміст">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Зміст
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Тригери активації регламенту
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Передумови (Prerequisites)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Передумови (Prerequisites)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1. Права доступу
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2. Необхідні утиліти
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-alerting-catalog" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Каталог алертів моніторингу (Alerting Catalog)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-step-by-step-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Покроковий алгоритм виконання (Step-by-Step Operations)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Покроковий алгоритм виконання (Step-by-Step Operations)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1. Крок 1: Діагностика стану черги та виявлення причин
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2. Крок 2: Перевірка працездатності залежних компонентів
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-3-poison-pill-isolation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3. Крок 3: Очищення «токсичних» повідомлень (Poison Pill Isolation)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-4-redis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4. Крок 4: Зняття завислих розподілених блокувань у Redis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-5-re-queueing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5. Крок 5: Запуск контрольованого репроцесингу (Re-queueing)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Верифікація досягнення мети
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-rollback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Процедура відкату (Rollback) та Ескалація
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Процедура відкату (Rollback) та Ескалація">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1. Процедура аварійного відкату
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2. Матриця ескалації
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Рівень автоматизації та обґрунтування
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Рівень автоматизації та обґрунтування">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Інженерне обґрунтування обраного рівня: Рівень 1 (Скриптований)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Зміст">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Зміст
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Тригери активації регламенту
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Передумови (Prerequisites)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Передумови (Prerequisites)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1. Права доступу
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2. Необхідні утиліти
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-alerting-catalog" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Каталог алертів моніторингу (Alerting Catalog)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-step-by-step-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Покроковий алгоритм виконання (Step-by-Step Operations)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Покроковий алгоритм виконання (Step-by-Step Operations)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1. Крок 1: Діагностика стану черги та виявлення причин
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2. Крок 2: Перевірка працездатності залежних компонентів
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-3-poison-pill-isolation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3. Крок 3: Очищення «токсичних» повідомлень (Poison Pill Isolation)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-4-redis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4. Крок 4: Зняття завислих розподілених блокувань у Redis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-5-re-queueing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5. Крок 5: Запуск контрольованого репроцесингу (Re-queueing)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Верифікація досягнення мети
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-rollback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Процедура відкату (Rollback) та Ескалація
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Процедура відкату (Rollback) та Ескалація">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1. Процедура аварійного відкату
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2. Матриця ескалації
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Рівень автоматизації та обґрунтування
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Рівень автоматизації та обґрунтування">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Інженерне обґрунтування обраного рівня: Рівень 1 (Скриптований)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="runbook-rb-001-dead-letter-queue-dlq">Runbook RB-001: Аварійне переповнення Dead Letter Queue (DLQ) та відновлення транзакцій лояльності</h1>
+<blockquote>
+<p><strong>Ідентифікатор:</strong> <code>RB-001</code><br />
+<strong>Сервіси:</strong> <code>point-service</code>, <code>customer-service</code>, <code>RabbitMQ</code>, <code>Redis</code><br />
+<strong>Рівень критичності:</strong> SEV-2 (High) / SEV-1 при вичерпанні ліміту пам'яті брокера<br />
+<strong>Цільовий час виконання (MTTR):</strong> &lt; 15 хвилин<br />
+<strong>Рівень автоматизації:</strong> Рівень 1 (Скриптований) з елементами Рівня 2 («Одна кнопка»)  </p>
+</blockquote>
+<hr />
+<h2 id="1">1. Тригери активації регламенту</h2>
+<p>Цей регламент виконується черговим SRE-інженером або розробником чергової зміни у разі настання будь-якої з подій:</p>
+<ol>
+<li><strong>Алерт моніторингу Prometheus/Alertmanager:</strong></li>
+<li><code>RabbitMQDeadLetterQueueSurge</code>: Кількість повідомлень у черзі <code>loyalty.points.dlq</code> перевищує <strong>50 шт.</strong> протягом 3 хвилин.</li>
+<li><code>EventProcessingLagHigh</code>: Затримка обробки подій споживачем перевищує <strong>60 секунд</strong>.</li>
+<li><strong>Скарги бізнесу / користувачів:</strong></li>
+<li>Звернення від касових вузлів або мобільного застосунку: «Бонусні бали за чеком не нараховано протягом 5 хвилин».</li>
+<li><strong>Планові регламентні роботи:</strong></li>
+<li>Пост-релізна перевірка цілісності черг після міграції схеми подій або оновлення версії мікросервісу.</li>
+</ol>
+<hr />
+<h2 id="2-prerequisites">2. Передумови (Prerequisites)</h2>
+<h3 id="21">2.1. Права доступу</h3>
+<ul>
+<li>Роль <code>sre-oncall</code> або <code>devops-admin</code> з правами доступу до виробничого кластера.</li>
+<li>Доступ до брокера RabbitMQ через Management API (<code>http://localhost:15672</code>) або CLI <code>rabbitmqadmin</code>.</li>
+<li>Доступ до Redis кластера (<code>redis-cli</code>) для перевірки розподілених блокувань Redlock.</li>
+<li>Доступ до логів сервісів (<code>kubectl logs</code> або Docker CLI).</li>
+</ul>
+<h3 id="22">2.2. Необхідні утиліти</h3>
+<p>На робочій станції або bastion-хості мають бути встановлені:
+- <code>curl</code>, <code>jq</code>, <code>grep</code>
+- <code>rabbitmqadmin</code> (RabbitMQ Management CLI)
+- <code>redis-cli</code>
+- Node.js LTS (для запуску аварійного скрипта репроцесингу)</p>
+<hr />
+<h2 id="3-alerting-catalog">3. Каталог алертів моніторингу (Alerting Catalog)</h2>
+<p>За канонічним правилом SRE: <strong>«Алерт без runbook — це спам і шум»</strong>. Кожен алерт системи жорстко прив'язаний до інструкції з ліквідації:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Назва алерту</th>
+<th style="text-align: left;">Умова спрацювання (PromQL)</th>
+<th style="text-align: center;">Серйозність</th>
+<th style="text-align: center;">Відповідальна роль</th>
+<th style="text-align: left;">Посилання на інструкцію</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>RabbitMQDeadLetterQueueSurge</code></td>
+<td style="text-align: left;"><code>rabbitmq_queue_messages{queue="loyalty.points.dlq"} &gt; 50</code> протягом 3m</td>
+<td style="text-align: center;"><strong>SEV-2</strong></td>
+<td style="text-align: center;">SRE On-call</td>
+<td style="text-align: left;"><a href="#4-покроковий-алгоритм-виконання">RB-001 (Розділ 4)</a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>CustomerServiceHighLatencyP95</code></td>
+<td style="text-align: left;"><code>histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) &gt; 0.25</code></td>
+<td style="text-align: center;"><strong>SEV-2</strong></td>
+<td style="text-align: center;">SRE On-call</td>
+<td style="text-align: left;"><a href="#41-крок-1-діагностика-стану-черги">RB-001 (Діагностика)</a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>DatabaseConnectionPoolExhausted</code></td>
+<td style="text-align: left;"><code>db_connection_pool_active / db_connection_pool_max &gt; 0.90</code> протягом 2m</td>
+<td style="text-align: center;"><strong>SEV-1</strong></td>
+<td style="text-align: center;">DevOps Lead</td>
+<td style="text-align: left;"><a href="../../architecture/isd/#4-reliability-engineering-rto-та-rpo">ISD: Section 4</a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>PointsLedgerDesyncDetected</code></td>
+<td style="text-align: left;"><code>increase(points_ledger_checksum_mismatch_total[5m]) &gt; 0</code></td>
+<td style="text-align: center;"><strong>SEV-1</strong></td>
+<td style="text-align: center;">Solution Architect</td>
+<td style="text-align: left;"><a href="../../architecture/adr/ADR-0002-in-memory-repository/">ADR-0002</a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-step-by-step-operations">4. Покроковий алгоритм виконання (Step-by-Step Operations)</h2>
+<h3 id="41-1">4.1. Крок 1: Діагностика стану черги та виявлення причин</h3>
+<p>Перевірити поточну кількість повідомлень у Dead Letter Queue та отримати перші 3 «завислі» повідомлення:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># 1. Перевірка лічильника повідомлень</span>
+rabbitmqadmin<span class="w"> </span>-H<span class="w"> </span>localhost<span class="w"> </span>-u<span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">RABBITMQ_USER</span><span class="k">:-</span><span class="nv">admin</span><span class="si">}</span><span class="s2">"</span><span class="w"> </span>-p<span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">RABBITMQ_PASSWORD</span><span class="si">}</span><span class="s2">"</span><span class="w"> </span>get<span class="w"> </span><span class="nv">queue</span><span class="o">=</span>loyalty.points.dlq<span class="w"> </span><span class="nv">count</span><span class="o">=</span><span class="m">3</span><span class="w"> </span><span class="nv">requeue</span><span class="o">=</span><span class="nb">true</span>
+
+<span class="c1"># 2. Оцінка швидкості надходження помилок</span>
+curl<span class="w"> </span>-s<span class="w"> </span>-u<span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">RABBITMQ_USER</span><span class="si">}</span><span class="s2">:</span><span class="si">${</span><span class="nv">RABBITMQ_PASSWORD</span><span class="si">}</span><span class="s2">"</span><span class="w"> </span>http://localhost:15672/api/queues/%2F/loyalty.points.dlq<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span><span class="s1">'{name: .name, messages: .messages, rate: .messages_details.rate}'</span>
+</code></pre></div>
+<p><em>Аналіз причини:</em> Перевірити заголовок <code>x-death</code> у зразку повідомлення. Типові причини:
+- <code>rejected</code> / <code>expired</code> (таймаут обробки в <code>point-service</code>).
+- <code>schema-mismatch</code> (невалідний формат JSON DTO).
+- <code>lock-timeout</code> (помилка отримання розподіленого блокування Redis Redlock).</p>
+<h3 id="42-2">4.2. Крок 2: Перевірка працездатності залежних компонентів</h3>
+<p>Перед очищенням або поверненням повідомлень у чергу переконатися, що бекенд та сховища відновлено:</p>
+<p><div class="highlight"><pre><span></span><code><span class="c1"># Перевірка здоров'я API Gateway та мікросервісів</span>
+curl<span class="w"> </span>-f<span class="w"> </span>-s<span class="w"> </span>http://localhost:3000/health<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>.
+curl<span class="w"> </span>-f<span class="w"> </span>-s<span class="w"> </span>http://localhost:3001/health<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>.
+
+<span class="c1"># Перевірка доступності Redis</span>
+redis-cli<span class="w"> </span>-h<span class="w"> </span>localhost<span class="w"> </span>-p<span class="w"> </span><span class="m">6379</span><span class="w"> </span>ping
+</code></pre></div>
+<em>Критерій готовності:</em> Усі запити повертають <code>{"status": "healthy"}</code> та <code>PONG</code>. Якщо сервіси не відповідають — спочатку виконати процедуру підняття залежностей згідно з <a href="../../architecture/isd/">ISD</a>.</p>
+<h3 id="43-3-poison-pill-isolation">4.3. Крок 3: Очищення «токсичних» повідомлень (Poison Pill Isolation)</h3>
+<p>Якщо у DLQ потрапило повідомлення з битою схемою (синтакчино невалідний JSON), воно викликатиме нескінченний цикл аварій:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Зберегти аварійний дамп черги у файл для подальшого аудиту</span>
+rabbitmqadmin<span class="w"> </span>-H<span class="w"> </span>localhost<span class="w"> </span>-u<span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">RABBITMQ_USER</span><span class="k">:-</span><span class="nv">admin</span><span class="si">}</span><span class="s2">"</span><span class="w"> </span>-p<span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">RABBITMQ_PASSWORD</span><span class="si">}</span><span class="s2">"</span><span class="w"> </span>get<span class="w"> </span><span class="nv">queue</span><span class="o">=</span>loyalty.points.dlq<span class="w"> </span><span class="nv">count</span><span class="o">=</span><span class="m">100</span><span class="w"> </span><span class="nv">requeue</span><span class="o">=</span><span class="nb">false</span><span class="w"> </span>&gt;<span class="w"> </span>/tmp/dlq_dump_<span class="k">$(</span>date<span class="w"> </span>+%Y%m%d_%H%M%S<span class="k">)</span>.json
+
+<span class="c1"># Перевірити, чи очищено некоректні повідомлення</span>
+cat<span class="w"> </span>/tmp/dlq_dump_*.json<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-v<span class="w"> </span><span class="s2">"payload"</span>
+</code></pre></div>
+<h3 id="44-4-redis">4.4. Крок 4: Зняття завислих розподілених блокувань у Redis</h3>
+<p>Якщо транзакції зависли через впавший інстанс воркера, який утримує блокування Redlock:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Пошук завислих ключів блокувань клієнтів</span>
+redis-cli<span class="w"> </span>-h<span class="w"> </span>localhost<span class="w"> </span>-p<span class="w"> </span><span class="m">6379</span><span class="w"> </span>--scan<span class="w"> </span>--pattern<span class="w"> </span><span class="s2">"lock:customer:*"</span>
+
+<span class="c1"># Примусове зняття блокувань старше 30 секунд</span>
+redis-cli<span class="w"> </span>-h<span class="w"> </span>localhost<span class="w"> </span>-p<span class="w"> </span><span class="m">6379</span><span class="w"> </span>EVAL<span class="w"> </span><span class="s2">"</span>
+<span class="s2">local keys = redis.call('keys', 'lock:customer:*')</span>
+<span class="s2">for i,k in ipairs(keys) do</span>
+<span class="s2">    redis.call('del', k)</span>
+<span class="s2">end</span>
+<span class="s2">return #keys"</span><span class="w"> </span><span class="m">0</span>
+</code></pre></div>
+<h3 id="45-5-re-queueing">4.5. Крок 5: Запуск контрольованого репроцесингу (Re-queueing)</h3>
+<p>Перенаправити валідні повідомлення з DLQ назад в основну чергу <code>point.events</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Перенесення повідомлень з DLQ у робочу чергу через Shovel Plugin</span>
+rabbitmqadmin<span class="w"> </span>-H<span class="w"> </span>localhost<span class="w"> </span>-u<span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">RABBITMQ_USER</span><span class="k">:-</span><span class="nv">admin</span><span class="si">}</span><span class="s2">"</span><span class="w"> </span>-p<span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">RABBITMQ_PASSWORD</span><span class="si">}</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="nb">declare</span><span class="w"> </span>parameter<span class="w"> </span><span class="nv">component</span><span class="o">=</span>shovel<span class="w"> </span><span class="nv">name</span><span class="o">=</span>reprocess-dlq<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="nv">value</span><span class="o">=</span><span class="s1">'{"src-uri": "amqp://", "src-queue": "loyalty.points.dlq", "dest-uri": "amqp://", "dest-queue": "point.events"}'</span>
+
+<span class="c1"># Очікування перенесення (5-10 секунд) та видалення shovel</span>
+sleep<span class="w"> </span><span class="m">10</span>
+rabbitmqadmin<span class="w"> </span>-H<span class="w"> </span>localhost<span class="w"> </span>-u<span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">RABBITMQ_USER</span><span class="k">:-</span><span class="nv">admin</span><span class="si">}</span><span class="s2">"</span><span class="w"> </span>-p<span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">RABBITMQ_PASSWORD</span><span class="si">}</span><span class="s2">"</span><span class="w"> </span>delete<span class="w"> </span>parameter<span class="w"> </span><span class="nv">component</span><span class="o">=</span>shovel<span class="w"> </span><span class="nv">name</span><span class="o">=</span>reprocess-dlq
+</code></pre></div>
+<hr />
+<h2 id="5">5. Верифікація досягнення мети</h2>
+<p>Черговий інженер підтверджує відновлення нормального функціонування за такими критеріями:</p>
+<ol>
+<li><strong>Лічильник DLQ нульовий:</strong>
+   <div class="highlight"><pre><span></span><code>rabbitmqadmin<span class="w"> </span>-H<span class="w"> </span>localhost<span class="w"> </span>-u<span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">RABBITMQ_USER</span><span class="k">:-</span><span class="nv">admin</span><span class="si">}</span><span class="s2">"</span><span class="w"> </span>-p<span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">RABBITMQ_PASSWORD</span><span class="si">}</span><span class="s2">"</span><span class="w"> </span>get<span class="w"> </span><span class="nv">queue</span><span class="o">=</span>loyalty.points.dlq<span class="w"> </span><span class="nv">count</span><span class="o">=</span><span class="m">1</span>
+<span class="c1"># Очікуваний вивід: No items</span>
+</code></pre></div></li>
+<li><strong>Логи споживача фіксують успішні транзакції:</strong>
+   <div class="highlight"><pre><span></span><code>tail<span class="w"> </span>-n<span class="w"> </span><span class="m">50</span><span class="w"> </span>/var/log/point-service/application.log<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-E<span class="w"> </span><span class="s2">"TRANSACTION_SETTLED|POINTS_ACCRUED"</span>
+</code></pre></div></li>
+<li><strong>Метрика SLI успішності 2xx повернулася до норми (&gt; 99.5%):</strong>
+   <div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-s<span class="w"> </span>http://localhost:3000/metrics<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span><span class="s2">"http_requests_total"</span>
+</code></pre></div></li>
+</ol>
+<hr />
+<h2 id="6-rollback">6. Процедура відкату (Rollback) та Ескалація</h2>
+<h3 id="61">6.1. Процедура аварійного відкату</h3>
+<p>Якщо після запуску репроцесингу виявлено стрімке зростання помилок HTTP 500 або повторне лавиноподібне заповнення DLQ:
+1. <strong>Негайно зупинити Shovel:</strong>
+   <code>rabbitmqadmin -H localhost -u "${RABBITMQ_USER:-admin}" -p "${RABBITMQ_PASSWORD}" delete parameter component=shovel name=reprocess-dlq</code>
+2. <strong>Перевести сервіс у режим Graceful Degradation:</strong>
+   Активувати збереження транзакцій у локальний лог відмов без публікації в чергу (режим Fallback з Лабораторної роботи №8).
+3. <strong>Зберегти нерозібрані повідомлення в архів:</strong>
+   Вивантажити залишки в cold storage: <code>s3://loyalty-backups/dlq-incidents/$(date +%F)/</code>.</p>
+<h3 id="62">6.2. Матриця ескалації</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Час від виникнення</th>
+<th style="text-align: left;">Кому ескалувати</th>
+<th style="text-align: left;">Канал зв'язку</th>
+<th style="text-align: left;">Дія</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><strong>0 – 5 хв</strong></td>
+<td style="text-align: left;">L1 SRE On-call інженер</td>
+<td style="text-align: left;">Telegram Alerting Bot, PagerDuty</td>
+<td style="text-align: left;">Первинна діагностика за кроками 1-2</td>
+</tr>
+<tr>
+<td style="text-align: center;"><strong>5 – 15 хв</strong></td>
+<td style="text-align: left;">L2 DevOps / Infrastructure Lead</td>
+<td style="text-align: left;">Спеціальний Slack-канал <code>#incidents-sev2</code></td>
+<td style="text-align: left;">Запуск ручного відновлення черг і блокувань</td>
+</tr>
+<tr>
+<td style="text-align: center;"><strong>&gt; 15 хв</strong></td>
+<td style="text-align: left;">L3 Solution Architect / Backend Lead (<code>@alexandrs1233</code>)</td>
+<td style="text-align: left;">Прямий голосовий дзвінок / Zoom Incident War Room</td>
+<td style="text-align: left;">Оголошення SEV-1, аналіз можливого дрейфу коду або даних</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7">7. Рівень автоматизації та обґрунтування</h2>
+<p>За канонічною шкалою рівнів автоматизації операцій (Лекція 10):
+- <strong>Рівень 0:</strong> Повністю ручний (інженер вручну формує команди без шаблонів).
+- <strong>Рівень 1:</strong> Скриптований (наявні чіткі інструкції, параметризовані bash/node скрипти).
+- <strong>Рівень 2:</strong> «Одна кнопка» (запуск через GitHub Actions <code>workflow_dispatch</code> або Rundeck / Ansible job).
+- <strong>Рівень 3:</strong> Self-healing (система сама виявляє збій і автоматично очищує/перезапускає без втручання людини).</p>
+<h3 id="1_1">Інженерне обґрунтування обраного рівня: <strong>Рівень 1 (Скриптований)</strong></h3>
+<p>Для операції відновлення балансу бонусних балів обрано <strong>Рівень 1 з елементами Рівня 2</strong>:</p>
+<blockquote>
+<p><strong>Чому не Рівень 3 (Self-healing)?</strong><br />
+Нарахування та списання балів є <strong>фінансово-чутливою операцією</strong>. У разі виникнення мережевого збою (Network Partitioning / Split-Brain) повністю автономний скрипт self-healing може повторно застосувати тисячі транзакцій до клієнтських акаунтів, що призведе до незворотного касового розриву та подвійного нарахування. Присутність чергового SRE-інженера, який виконує скриптовану послідовність дій і підтверджує валідність даних, є критичною для запобігання фінансовим збиткам.</p>
+</blockquote>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Повернутись нагору
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "\u0421\u043a\u043e\u043f\u0456\u0439\u043e\u0432\u0430\u043d\u043e \u0432 \u0431\u0443\u0444\u0435\u0440", "clipboard.copy": "\u0421\u043a\u043e\u043f\u0456\u044e\u0432\u0430\u0442\u0438 \u0432 \u0431\u0443\u0444\u0435\u0440", "search.result.more.one": "\u0429\u0435 1 \u0437\u0431\u0456\u0433 \u043d\u0430 \u0446\u0456\u0439 \u0441\u0442\u043e\u0440\u0456\u043d\u0446\u0456", "search.result.more.other": "\u0429\u0435 # \u0437\u0431\u0456\u0433\u0456\u0432 \u043d\u0430 \u0446\u0456\u0439 \u0441\u0442\u043e\u0440\u0456\u043d\u0446\u0456", "search.result.none": "\u0417\u0431\u0456\u0433\u0456\u0432 \u043d\u0435 \u0437\u043d\u0430\u0439\u0434\u0435\u043d\u043e", "search.result.one": "\u0417\u043d\u0430\u0439\u0434\u0435\u043d\u043e 1 \u0437\u0431\u0456\u0433", "search.result.other": "\u0417\u043d\u0430\u0439\u0434\u0435\u043d\u043e # \u0437\u0431\u0456\u0433\u0456\u0432", "search.result.placeholder": "\u0420\u043e\u0437\u043f\u043e\u0447\u043d\u0456\u0442\u044c \u043f\u0438\u0441\u0430\u0442\u0438 \u0434\u043b\u044f \u043f\u043e\u0448\u0443\u043a\u0443", "search.result.term.missing": "\u041d\u0435 \u0437\u043d\u0430\u0439\u0434\u0435\u043d\u043e \u0437\u0430\u043f\u0438\u0442\u0443", "select.version": "\u041e\u0431\u0440\u0430\u0442\u0438 \u0432\u0435\u0440\u0441\u0456\u044e"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+    
+  </body>
+</html>
